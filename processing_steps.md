@@ -20,12 +20,12 @@
         - projectPath
         - BLOCK1
         - BLOCK2
-        - BLOCK
+        - BLOCK_X
     * config_processing.env
         - path_csv_local
         - POSITION_STR_FRONT
         - POSITION_STR_BACK
 3. run preprocessing each Block individually
     ```bash
-    python processing.data_processing
+    python processing.data_processing.py
     ```

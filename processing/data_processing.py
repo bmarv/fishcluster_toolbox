@@ -6,8 +6,8 @@ import multiprocessing as mp
 import numpy as np
 import hdf5storage 
 # Module Imports
-from utils.utils import get_days_in_order, set_parameters
-from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, start_time_of_day_to_seconds
+from utils.utils import set_parameters
+from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, start_time_of_day_to_seconds, get_days_in_order
 from utils.excluded_days import get_excluded_days, block1_remove
 from utils.tank_area_config import get_area_functions
 from utils.error_filter import all_error_filters

@@ -1,7 +1,7 @@
 import numpy as np
 import config_processing as config
 from utils.processing_methods import distance_to_wall_chunk, calc_steps
-from fishproviz.utils.transformation import px2cm
+from utils.processing_transformation import px2cm
 
 
 def all_error_filters(data, area_tuple, **kwargs):

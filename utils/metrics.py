@@ -3,6 +3,19 @@ import scipy.stats as scipy_stats
 import config_processing as config
 
 
+def get_spikes_filter(steps):
+    return steps > config.SPIKE_THRESHOLD
+
+
+def update_filter_two_points(steps, filter_index):
+    return filter_index[:-1] | filter_index[1:] | get_spikes_filter(steps)
+
+
+def update_filter_three_points(steps, filter_index):
+    filter_index = update_filter_two_points(steps, filter_index)
+    return filter_index[:-1] | filter_index[1:]
+
+
 def compute_step_lengths(points):
     # Calculate the Euclidean distance between consecutive points
     vectors = np.diff(points, axis=0)

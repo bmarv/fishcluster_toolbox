@@ -4,6 +4,7 @@ import os
 import numpy as np
 import bisect
 from config import projectPath
+# TODO: replace mmpy methods with own implementation
 import motionmapperpy as mmpy
 
 def pointsInCircum(r,n=100):
