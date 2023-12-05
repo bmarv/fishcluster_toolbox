@@ -94,7 +94,7 @@ def setRunParameters(parameters=None):
     """# %%%%%%%% General Parameters %%%%%%%%"""
 
     # %number of processors to use in parallel code
-    numProcessors = 12
+    numProcessors = 10
 
     useGPU = -1
 

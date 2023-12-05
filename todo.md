@@ -1,5 +1,5 @@
 1. Data Pre-Processing
-[] initialization, loading
+[x] initialization, loading
 [] normalization
 [] subsampling
 

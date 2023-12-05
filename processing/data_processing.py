@@ -111,7 +111,13 @@ def compute_all_projections_filtered(parameters):
 
 
 if __name__ == "__main__":
-    # TODO: run processing for both blocks in succession
+    BLOCK = 'block1'
+    os.environ['BLOCK'] = 'block1'
+    print("Start computation for: ", BLOCK)
+    parameters = set_parameters()
+    compute_all_projections_filtered(parameters)
+    BLOCK = 'block2'
+    os.environ['BLOCK'] = 'block2'
     print("Start computation for: ", BLOCK)
     parameters = set_parameters()
     compute_all_projections_filtered(parameters)
