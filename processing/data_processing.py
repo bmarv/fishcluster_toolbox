@@ -62,28 +62,48 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
     return X, new_area
 
 
-def compute_and_write_projection(fk, day, area_tuple, filename, recompute=False, excluded_days=dict()):
+def compute_and_write_projection(fk, day, area_tuple, filename, recompute=False, excluded_days=dict(), trimmed = False):
     if not recompute and os.path.exists(filename):
         return None
     X, new_area = compute_projections(fk, day, area_tuple, excluded_days=excluded_days)
     if X is None: return None
     print(f"{fk} {day} {X.shape}")
     if X.shape[0]<1000:
-        print("Skipe number of datapoints to small")
+        print("Skip: number of datapoints to small")
         return None
-    hdf5storage.write(data={'projections': X[:,1:4], 
-                            'positions': X[:,4:], 
-                            'area':new_area, 
-                            'df_time_index':X[:,0],
-                            'day':day,
-                            'fish_key':fk},
-                        path='/', truncate_existing=True,
-                filename=filename,
-                store_python_metadata=False, matlab_compatible=True)
+    if trimmed:
+        hdf5storage.write(
+        data={
+            'projections': X[:,1:4], 
+            'positions': X[:,4:], 
+            'df_time_index':X[:,0],
+        },
+        path='/', 
+        truncate_existing=True,
+        filename=filename,
+        store_python_metadata=False, 
+        matlab_compatible=True
+    )
+    else: 
+        hdf5storage.write(
+            data={
+                'projections': X[:,1:4], 
+                'positions': X[:,4:], 
+                'area':new_area, 
+                'df_time_index':X[:,0],
+                'day':day,
+                'fish_key':fk
+            },
+            path='/', 
+            truncate_existing=True,
+            filename=filename,
+            store_python_metadata=False, 
+            matlab_compatible=True
+        )
     return None
 
 
-def compute_all_projections(projectPath, fish_keys=None, recompute=False, excluded_days=dict()):
+def compute_all_projections(projectPath, fish_keys=None, recompute=False, excluded_days=dict(), trimmed = False):
     area_f = get_area_functions()
     if fish_keys is None:
         fish_keys = get_camera_pos_keys()
@@ -92,13 +112,21 @@ def compute_all_projections(projectPath, fish_keys=None, recompute=False, exclud
         t1 = time.time()
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(camera=fk.split("_")[0], is_back=fk.split("_")[1]==BACK)
-        outs = pool.starmap(compute_and_write_projection, 
-                [(fk, day, (fk, area_f(fk)), projectPath + f'/Projections/{BLOCK}_{fk}_{day}_pcaModes.mat', recompute, excluded_days) for day in days])
+        if trimmed:
+            trimmed_directory = projectPath + f'/Projections_trimmed'
+            if not os.path.exists(trimmed_directory):
+                os.makedirs(trimmed_directory, exist_ok=True)
+                print('trimmed projections directory created')
+            outs = pool.starmap(compute_and_write_projection, 
+                    [(fk, day, (fk, area_f(fk)), projectPath + f'/Projections_trimmed/{BLOCK}_{fk}_{day}_pcaModes.mat', recompute, excluded_days, trimmed) for day in days])
+        else:
+            outs = pool.starmap(compute_and_write_projection, 
+                    [(fk, day, (fk, area_f(fk)), projectPath + f'/Projections/{BLOCK}_{fk}_{day}_pcaModes.mat', recompute, excluded_days) for day in days])
         pool.close()
         pool.join()
         print('\t Processed fish #%4i %s out of %4i in %0.02fseconds.\n'%(i+1, fk, len(fish_keys), time.time()-t1))
 
-def compute_all_projections_filtered(parameters):
+def compute_all_projections_filtered(parameters, trimmed = False):
     fish_keys = get_camera_pos_keys() # get all fish keys
     for key in block1_remove:
         if BLOCK in key:
@@ -106,7 +134,7 @@ def compute_all_projections_filtered(parameters):
             if fk in fish_keys:
                 fish_keys.remove(fk)
     excluded=get_excluded_days(list(map(lambda f: f"{BLOCK}_{f}", fish_keys)))
-    compute_all_projections(parameters.projectPath,fish_keys,excluded_days=excluded,recompute=True)
+    compute_all_projections(parameters.projectPath,fish_keys,excluded_days=excluded,recompute=True, trimmed=trimmed)
 
 
 
@@ -115,9 +143,9 @@ if __name__ == "__main__":
     os.environ['BLOCK'] = 'block1'
     print("Start computation for: ", BLOCK)
     parameters = set_parameters()
-    compute_all_projections_filtered(parameters)
+    compute_all_projections_filtered(parameters, trimmed = False)
     BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
     print("Start computation for: ", BLOCK)
     parameters = set_parameters()
-    compute_all_projections_filtered(parameters)
+    compute_all_projections_filtered(parameters, trimmed = False)
