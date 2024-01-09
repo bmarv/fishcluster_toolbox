@@ -228,3 +228,13 @@ def start_time_of_day_to_seconds(START_TIME):
         )
     else:
         raise ValueError("START_TIME must be of length 6")
+
+
+def get_individuals_keys(parameters, block=""):
+    files = glob.glob(parameters.projectPath+f"/Projections/{block}*_pcaModes.mat")
+    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[:3]),files))))
+
+
+def get_days(parameters, prefix=""):
+    files = glob.glob(parameters.projectPath+f"/Projections/{prefix}*_pcaModes.mat")
+    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[3:5]),files))))
