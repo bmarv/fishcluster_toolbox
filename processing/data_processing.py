@@ -5,6 +5,7 @@ import pandas as pd
 import multiprocessing as mp
 import numpy as np
 import hdf5storage 
+from tqdm import tqdm
 # Module Imports
 from utils.utils import set_parameters
 from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, start_time_of_day_to_seconds, get_days_in_order
@@ -135,6 +136,23 @@ def compute_all_projections_filtered(parameters, trimmed = False):
                 fish_keys.remove(fk)
     excluded=get_excluded_days(list(map(lambda f: f"{BLOCK}_{f}", fish_keys)))
     compute_all_projections(parameters.projectPath,fish_keys,excluded_days=excluded,recompute=True, trimmed=trimmed)
+
+
+def load_trajectory_data(parameters,fk="", day=""):
+    data_by_day = []
+    pfile = glob.glob(parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat')
+    pfile.sort()
+    print('loading trajectory data')
+    for f in tqdm(pfile): 
+        data = hdf5storage.loadmat(f)
+        data_by_day.append(data)
+    return data_by_day
+
+
+def return_normalization_func(parameters):
+    data = np.concatenate([d["projections"] for d in load_trajectory_data(parameters)])
+    std = data.std(axis=0)
+    return lambda pro: pro/std
 
 
 
