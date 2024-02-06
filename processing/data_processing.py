@@ -149,13 +149,6 @@ def load_trajectory_data(parameters,fk="", day=""):
     return data_by_day
 
 
-def return_normalization_func(parameters):
-    data = np.concatenate([d["projections"] for d in load_trajectory_data(parameters)])
-    std = data.std(axis=0)
-    return lambda pro: pro/std
-
-
-
 if __name__ == "__main__":
     BLOCK = 'block1'
     os.environ['BLOCK'] = 'block1'
