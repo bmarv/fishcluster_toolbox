@@ -16,16 +16,19 @@ def umap_inference_for_individual(
     zValstr
 ):
     """
-    findEmbeddings finds the optimal embedding of a data set into a previously
-    found t-SNE embedding.
-    :param projections:  N x (pcaModes x numPeriods) array of projection values.
-    :param trainingData: Nt x (pcaModes x numPeriods) array of wavelet amplitudes containing Nt data points.
+    Perform umap inference for individual projections.
+    Based on motionmapperpy.
+
+    :param projections:  N x (pcaModes x numPeriods) array of
+        projection values.
+    :param trainingData: Nt x (pcaModes x numPeriods) array of wavelet
+        amplitudes containing Nt data points.
     :param trainingEmbedding: Nt x 2 array of embeddings.
     :param parameters: motionmapperpy Parameters dictionary.
-    :return: zValues : N x 2 array of embedding results, outputStatistics : dictionary containing other parametric
+    :return: zValues : N x 2 array of embedding results, outputStatistics :
+        dictionary containing other parametric
     outputs.
     """
-    # TODO: update docstring
     numModes = parameters.pcaModes
 
     if parameters.waveletDecomp:
@@ -67,14 +70,14 @@ def umap_inference_for_individual(
         data={'zValues': zValues},
         path='/',
         truncate_existing=True,
-        filename=projectionFile[:-4]+'_%s.mat' % (zValstr),
+        filename=projectionFile[:-4]+'_uVals.mat',
         store_python_metadata=False,
         matlab_compatible=True
     )
 
     # Save output statistics
     with open(
-        projectionFile[:-4] + f'_{zValstr}_outputStatistics.pkl',
+        projectionFile[:-4] + '_uVals_outputStatistics.pkl',
         'wb'
     ) as hfile:
         pickle.dump(outputStatistics, hfile)
@@ -82,8 +85,21 @@ def umap_inference_for_individual(
 
 
 def kmeans_inference_for_individual(projections, parameters, projectionFile):
-    # TODO: add docstring
-    # TODO: add timer
+    """
+    Perform k-means inference for individual projections.
+    Based on motionmapperpy.
+
+    Args:
+        projections (numpy.ndarray): The input projections.
+        parameters (object): The parameters object containing
+            configuration settings.
+        projectionFile (str): The file path of the projection file.
+
+    Returns:
+        dict: A dictionary containing the clustering results for
+            different values of k.
+    """
+    t1 = time.time()
     numModes = parameters.pcaModes
     if parameters.waveletDecomp:
         print('Finding Wavelets')
@@ -111,6 +127,7 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
             kmeans(k).predict(data)
             ) for k in parameters.kmeans_list]
     )
+    print(f'Embeddings found in {time.time() - t1:0.02f} seconds.')
     for key, value in clusters_dict.items():
         hdf5storage.write(
             data={"clusters": value, "k": int(key.split("_")[1])},

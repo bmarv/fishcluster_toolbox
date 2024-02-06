@@ -59,7 +59,7 @@ def run_UMAP(data, parameters, save_model=True):
 def run_kmeans(k, tsne_directory, trainingSetData, useGPU=-1):
     """
     Runs the K-means clustering algorithm on the training set data.
-    Based on motionmapperpy
+    Based on motionmapperpy.
 
     Args:
         k (int): The number of clusters to create.

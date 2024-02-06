@@ -28,13 +28,11 @@ for k in parameters.kmeans_list:
 
 
 # INFERENCING
-# calc embedding for all individuals
-zValstr = 'uVals'
 projectionFiles = glob.glob(
     parameters.projectPath + '/Projections/*pcaModes.mat'
 )
 for i in range(len(projectionFiles)):
-    if os.path.exists(projectionFiles[i][:-4] + f'_{zValstr}.mat'):
+    if os.path.exists(projectionFiles[i][:-4] + '_uVals.mat'):
         print('Already done. Skipping.\n')
         continue
 
@@ -44,14 +42,12 @@ for i in range(len(projectionFiles)):
         parameters,
         projectionFiles[i]
     )
-    # umap inferencing on individuals
     inferencing.umap_inference_for_individual(
         projections,
         trainingSetData,
         trainingEmbedding,
         parameters,
-        projectionFiles[i],
-        zValstr
+        projectionFiles[i]
     )
 
 print(f'Embedding and Inference finished in {time.time() - tall} seconds!')
