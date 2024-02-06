@@ -5,6 +5,9 @@ import time
 import os
 import motionmapperpy as mmpy
 from utils import train_utils
+from training import embedding
+# from training import inferencing
+# from training import segmentation
 
 tall = time.time()
 parameters = train_utils.initialize_training_parameters()
@@ -15,15 +18,17 @@ trainingSetData, _ = train_utils.subsample_from_projections(parameters)
 tfolder = parameters.projectPath + f'/{parameters.method}/'
 
 # UMAP embedding for the whole dataset
-'''UMAP'''
-trainingEmbedding = mmpy.run_UMAP(trainingSetData, parameters)
+trainingEmbedding = embedding.run_UMAP(trainingSetData, parameters)
+
+# TODO: Is floating point stability necessary, where to embed this?
+# potentially injecting it before embedding umap?
 trainingSetData[trainingSetData == 0] = 1e-12  # replace 0 with 1e-12
 
-# calc kmeans embedding
+# kmeans embedding for the whole dataset
 for k in parameters.kmeans_list:
     if not os.path.exists(tfolder + f'/kmeans_{k}.pkl'):
-        print(f'Initializing kmeans model with {k} clusters')
-        mmpy.set_kmeans_model(k, tfolder, trainingSetData, parameters.useGPU)
+        print(f'Emebdding kmeans model with {k} clusters')
+        embedding.run_kmeans(k, tfolder, trainingSetData, parameters.useGPU)
 
 # calc embedding for all individuals
 ''' call hierarchy:
