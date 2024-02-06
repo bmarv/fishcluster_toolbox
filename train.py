@@ -6,7 +6,6 @@ import motionmapperpy as mmpy
 from training import training_processing
 from training import embedding
 from training import inferencing
-# from training import segmentation
 
 # PRE-PROCESSING
 tall = time.time()
