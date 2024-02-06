@@ -1,37 +1,30 @@
 import hdf5storage
-import pickle
 import glob
 import time
 import os
 import motionmapperpy as mmpy
-import training_processing
+from training import training_processing
 from training import embedding
-# from training import inferencing
+from training import inferencing
 # from training import segmentation
 
 # PRE-PROCESSING
 tall = time.time()
-parameters = train_utils.initialize_training_parameters()
+parameters = training_processing.initialize_training_parameters()
 mmpy.createProjectDirectory(parameters.projectPath)
-parameters.normalize_func = train_utils.return_normalization_func(parameters)
+parameters.normalize_func = training_processing\
+    .return_normalization_func(parameters)
 print("Subsample from projections")
-trainingSetData, _ = train_utils.subsample_from_projections(parameters)
+trainingSetData, _ = training_processing.subsample_from_projections(parameters)
 
 
 # EMBEDDING
-# UMAP embedding for the whole dataset
 trainingEmbedding = embedding.run_UMAP(trainingSetData, parameters)
-
-# TODO: Is floating point stability necessary, where to embed this?
-# potentially injecting it before embedding umap?
 trainingSetData[trainingSetData == 0] = 1e-12  # replace 0 with 1e-12
-
-# kmeans embedding for the whole dataset
 tfolder = parameters.projectPath + f'/{parameters.method}/'
 for k in parameters.kmeans_list:
     if not os.path.exists(tfolder + f'/kmeans_{k}.pkl'):
         embedding.run_kmeans(k, tfolder, trainingSetData, parameters.useGPU)
-
 
 
 # INFERENCING
@@ -44,54 +37,24 @@ for i in range(len(projectionFiles)):
     if os.path.exists(projectionFiles[i][:-4] + f'_{zValstr}.mat'):
         print('Already done. Skipping.\n')
         continue
-    # load projections for a specific dataset
-    projections = hdf5storage.loadmat(projectionFiles[i])['projections']
-    # kmeans inferencing on individuals
-    # TODO: refactor mmpy.findClusters -> kmeans.predict
-    clusters_dict = mmpy.findClusters(projections, parameters)
-    for key, value in clusters_dict.items():
-        hdf5storage.write(
-            data={"clusters": value, "k": int(key.split("_")[1])},
-            path='/',
-            truncate_existing=True,
-            filename=projectionFiles[i][:-4]+'_%s.mat' % (key),
-            store_python_metadata=False,
-            matlab_compatible=True
-        )
 
+    projections = hdf5storage.loadmat(projectionFiles[i])['projections']
+    inferencing.kmeans_inference_for_individual(
+        projections,
+        parameters,
+        projectionFiles[i]
+    )
     # umap inferencing on individuals
-        # TODO: unify computing and saving datasets/embeddings
-    zValues, outputStatistics = mmpy.findEmbeddings(
+    inferencing.umap_inference_for_individual(
         projections,
         trainingSetData,
         trainingEmbedding,
-        parameters
+        parameters,
+        projectionFiles[i],
+        zValstr
     )
 
-    # Save embeddings
-    hdf5storage.write(
-        data={'zValues': zValues},
-        path='/',
-        truncate_existing=True,
-        filename=projectionFiles[i][:-4]+'_%s.mat' % (zValstr),
-        store_python_metadata=False,
-        matlab_compatible=True
-    )
-
-    # Save output statistics
-    with open(
-        projectionFiles[i][:-4] + f'_{zValstr}_outputStatistics.pkl',
-        'wb'
-    ) as hfile:
-        pickle.dump(outputStatistics, hfile)
-
-    del clusters_dict, zValues, projections, outputStatistics
-
-print('All Embeddings Saved in %i seconds!' % (time.time() - tall))
-
-
-
-
+print(f'Embedding and Inference finished in {time.time() - tall} seconds!')
 
 # SEGMENTATION
 startsigma = 1.0

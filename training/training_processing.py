@@ -4,7 +4,7 @@ import h5py
 import hdf5storage
 import numpy as np
 
-from utils.utils import set_parameters
+from utils import utils
 from processing.data_processing import load_trajectory_data
 import motionmapperpy as mmpy
 
@@ -26,13 +26,13 @@ def initialize_training_parameters():
             Lower this if you get a memory error when
             re-embedding points on a learned map.
     """
-    parameters = set_parameters()
+    parameters = utils.set_parameters()
     parameters.useGPU = 0  # 0 for GPU, -1 for CPU
     parameters.training_numPoints = 5000  # Number of points in mini-trainings.
     parameters.trainingSetSize = 72000
     parameters.embedding_batchSize = 30000
 
-    mmpy.createProjectDirectory(parameters.projectPath)
+    utils.createProjectDirectory(parameters.projectPath)
 
     if parameters.useGPU == 0:
         from cuml import UMAP  # GPU
