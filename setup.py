@@ -18,11 +18,11 @@ extensions = [
     )
 ]
 setup(
-    name="fishcluster_wip",
+    name="fishcluster_toolbox",
     version="0.1",
     author="MRB",
-    # author_email="luka.staerk@mailbox.org",
-    # description="A package to analyze trajectories",
+    author_email="beesemarvin@gmail.com",
+    description="Preprocessing and Unsupervised Learning of behavioural trajectories",
     ext_modules=cythonize(extensions),
     # install_requires=['requirement'],
     packages=find_packages(),
