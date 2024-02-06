@@ -4,19 +4,21 @@ import glob
 import time
 import os
 import motionmapperpy as mmpy
-from utils import train_utils
+import training_processing
 from training import embedding
 # from training import inferencing
 # from training import segmentation
 
+# PRE-PROCESSING
 tall = time.time()
 parameters = train_utils.initialize_training_parameters()
 mmpy.createProjectDirectory(parameters.projectPath)
 parameters.normalize_func = train_utils.return_normalization_func(parameters)
 print("Subsample from projections")
 trainingSetData, _ = train_utils.subsample_from_projections(parameters)
-tfolder = parameters.projectPath + f'/{parameters.method}/'
 
+
+# EMBEDDING
 # UMAP embedding for the whole dataset
 trainingEmbedding = embedding.run_UMAP(trainingSetData, parameters)
 
@@ -25,20 +27,15 @@ trainingEmbedding = embedding.run_UMAP(trainingSetData, parameters)
 trainingSetData[trainingSetData == 0] = 1e-12  # replace 0 with 1e-12
 
 # kmeans embedding for the whole dataset
+tfolder = parameters.projectPath + f'/{parameters.method}/'
 for k in parameters.kmeans_list:
     if not os.path.exists(tfolder + f'/kmeans_{k}.pkl'):
-        print(f'Emebdding kmeans model with {k} clusters')
         embedding.run_kmeans(k, tfolder, trainingSetData, parameters.useGPU)
 
+
+
+# INFERENCING
 # calc embedding for all individuals
-''' call hierarchy:
-    * for all projectionFiles
-        * load embeddings
-        * find kmeans clusters
-        * find umap clusters
-        * calc output-statistics
-        * save output
-'''
 zValstr = 'uVals'
 projectionFiles = glob.glob(
     parameters.projectPath + '/Projections/*pcaModes.mat'
@@ -92,7 +89,11 @@ for i in range(len(projectionFiles)):
 
 print('All Embeddings Saved in %i seconds!' % (time.time() - tall))
 
-# watershed segmentation
+
+
+
+
+# SEGMENTATION
 startsigma = 1.0
 for k in parameters.kmeans_list:
     mmpy.findWatershedRegions(
