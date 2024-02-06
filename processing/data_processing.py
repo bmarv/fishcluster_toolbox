@@ -1,4 +1,3 @@
-# Packages Imports
 import os
 import glob
 import time
@@ -7,7 +6,7 @@ import multiprocessing as mp
 import numpy as np
 import hdf5storage
 from tqdm import tqdm
-# Module Imports
+
 from utils.utils import set_parameters
 from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, \
     start_time_of_day_to_seconds, get_days_in_order
@@ -19,7 +18,7 @@ from utils.processing_transformation import px2cm, \
 from utils.processing_methods import distance_to_wall_chunk
 from utils.metrics import update_filter_three_points, compute_turning_angles, \
     compute_step_lengths
-# VARS
+
 from config import BLOCK, BACK, BATCH_SIZE, FRAMES_PER_SECOND
 WAVELET = 'wavelet'
 clusterStr = 'clusters'
@@ -222,6 +221,7 @@ if __name__ == "__main__":
     print("Start computation for: ", BLOCK)
     parameters = set_parameters()
     compute_all_projections_filtered(parameters, trimmed=False)
+
     BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
     print("Start computation for: ", BLOCK)
