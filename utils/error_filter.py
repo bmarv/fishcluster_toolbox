@@ -118,7 +118,7 @@ def error_points_out_of_range(data, area_tuple):
 
 
 def error_points_out_of_area(data, area_tuple, day=""):
-    """returns a boolean np.array, where true indecates whether
+    """returns a boolean np.array, where true indicates whether
     the corresponding datapoint is on the wrong side of the tank"""
     key, area = area_tuple
     is_back = config.BACK in key  # key in the shape of <<camera>>_<<position>>

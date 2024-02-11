@@ -57,6 +57,24 @@ def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
 
 
 def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
+    """
+    Computes projections for a specific fish, day, and area.
+    This function first determines the starting time for the analysis.
+    It then filters the dataset to exclude records outside the specified area,
+    as well as those containing dirt or NaN (Not a Number) values.
+    After filtering, it calculates various features of the fish's movement
+    (steps, turning angle, distance to the wall)
+
+    Parameters:
+    - fish_key (str): The fish key.
+    - day (str): The day.
+    - area_tuple (tuple): The area tuple.
+    - excluded_days (dict): Dictionary of excluded days.
+
+    Returns:
+    - X (numpy.ndarray): The computed projections.
+    - new_area (tuple): The new area tuple.
+    """
     cam, pos = fish_key.split("_")
     is_back = pos == BACK
     keys, data_in_batches = csv_of_the_day(
