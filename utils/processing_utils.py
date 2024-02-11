@@ -1,14 +1,12 @@
-from datetime import datetime
-from time import gmtime, strftime
 import pandas as pd
 import numpy as np
 import re
 import os
-from os import path, makedirs
 import glob
 from itertools import product
 from config import projectPath
 import config_processing as config
+
 
 def get_directory(is_back=None):
     BLOCK = os.environ['BLOCK']
@@ -59,7 +57,8 @@ def get_days_in_order(interval=None, is_back=None, camera=None):
     """
     @params
     interval tuple (int i,int j) i < j, to return only days from i to j
-    camera: concider days of the cameras folder, default: first camera, that expects all cameras to have the same number of cameras.
+    camera: concider days of the cameras folder, default: first camera,
+        that expects all cameras to have the same number of cameras.
     """
     if camera is None or is_back is None:
         raise ValueError("provid kwargs is_back and camera")
@@ -76,8 +75,9 @@ def get_days_in_order(interval=None, is_back=None, camera=None):
             % (camera, config.BACK if is_back else config.FRONT)
         )
     if interval:
-        return days_unique[interval[0] : interval[1]]
+        return days_unique[interval[0]: interval[1]]
     return days_unique
+
 
 def read_batch_csv(filename, drop_errors):
     df = pd.read_csv(
@@ -94,6 +94,7 @@ def read_batch_csv(filename, drop_errors):
     df.reset_index(drop=True, inplace=True)
     return df
 
+
 def get_error_indices(dataframe):
     """
     @params: dataframe
@@ -106,13 +107,13 @@ def get_error_indices(dataframe):
     )  # except the last index for time recording
     return indexNames
 
+
 def merge_files(filenames, drop_errors):
     batches = []
     for f in filenames:
         df = read_batch_csv(f, drop_errors)
         batches.append(df)
     return batches
-
 
 
 def csv_of_the_day(
@@ -145,7 +146,7 @@ def csv_of_the_day(
         filenames_f,
         n_files=config.MAX_BATCH_IDX + 1,
         min_idx=config.MIN_BATCH_IDX,
-    )  # filters for duplicates in the batches for a day. It takes the LAST one!!!
+    )  # filters for duplicates in the batches for a day. It takes the LAST one!
     for key in batch_keys_remove:
         filtered_files.pop(key, None)
     file_keys = list(filtered_files.keys())
@@ -232,9 +233,9 @@ def start_time_of_day_to_seconds(START_TIME):
 
 def get_individuals_keys(parameters, block=""):
     files = glob.glob(parameters.projectPath+f"/Projections/{block}*_pcaModes.mat")
-    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[:3]),files))))
+    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[:3]), files))))
 
 
 def get_days(parameters, prefix=""):
     files = glob.glob(parameters.projectPath+f"/Projections/{prefix}*_pcaModes.mat")
-    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[3:5]),files))))
+    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[3:5]), files))))
