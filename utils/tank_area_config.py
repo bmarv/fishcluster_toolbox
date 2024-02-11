@@ -45,6 +45,7 @@ def read_area_data_from_json():
             area_data[k] = np.array(area_data[k])
         return area_data
 
+
 def get_areas():
     area_data = dict()
     example_dict = {config.FRONT: np.array([]), config.BACK: np.array([])}
