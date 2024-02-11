@@ -13,9 +13,9 @@ from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, \
 from utils.excluded_days import get_excluded_days, block1_remove
 from utils.tank_area_config import get_area_functions
 from utils.error_filter import all_error_filters
-from utils.processing_transformation import px2cm, \
+from processing.processing_transformation import px2cm, \
     normalize_origin_of_compartment
-from utils.processing_methods import distance_to_wall_chunk
+from processing.processing_methods import distance_to_wall_chunk
 from utils.metrics import update_filter_three_points, compute_turning_angles, \
     compute_step_lengths
 
@@ -63,7 +63,7 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
         cam,
         day,
         is_back=is_back,
-        batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}",[])
+        batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}", [])
     )
     if len(data_in_batches) == 0:
         print(f"{fish_key} for day {day} is empty! ")
@@ -167,7 +167,7 @@ def compute_all_projections(
             if not os.path.exists(trimmed_directory):
                 os.makedirs(trimmed_directory, exist_ok=True)
                 print('trimmed projections directory created')
-            outs = pool.starmap(compute_and_write_projection, [(
+            _ = pool.starmap(compute_and_write_projection, [(
                     fk, day, (fk, area_f(fk)),
                     projectPath + f'/Projections_trimmed/{BLOCK}_{fk}_{day}\
                         _pcaModes.mat',
@@ -175,24 +175,27 @@ def compute_all_projections(
                 ) for day in days]
             )
         else:
-            outs = pool.starmap(compute_and_write_projection, [(
-                fk, day, (fk, area_f(fk)), 
+            _ = pool.starmap(compute_and_write_projection, [(
+                fk, day, (fk, area_f(fk)),
                 projectPath + f'/Projections/{BLOCK}_{fk}_{day}_pcaModes.mat',
                 recompute, excluded_days) for day in days]
             )
         pool.close()
         pool.join()
-        print('\t Processed fish #%4i %s out of %4i in %0.02fseconds.\n'%(i+1, fk, len(fish_keys), time.time()-t1))
+        print(f'\t Processed fish #{i+1:4} {fk} out of {len(fish_keys):4} in \
+            {time.time() - t1:0.02f} seconds.\n')
 
 
-def compute_all_projections_filtered(parameters, trimmed = False):
-    fish_keys = get_camera_pos_keys() # get all fish keys
+def compute_all_projections_filtered(parameters, trimmed=False):
+    fish_keys = get_camera_pos_keys()  # get all fish keys
     for key in block1_remove:
         if BLOCK in key:
             fk = "_".join(key.split("_")[1:])
             if fk in fish_keys:
                 fish_keys.remove(fk)
-    excluded = get_excluded_days(list(map(lambda f: f"{BLOCK}_{f}", fish_keys)))
+    excluded = get_excluded_days(
+        list(map(lambda f: f"{BLOCK}_{f}", fish_keys))
+    )
     compute_all_projections(
         parameters.projectPath,
         fish_keys,
@@ -209,21 +212,19 @@ def load_trajectory_data(parameters, fk="", day=""):
     )
     pfile.sort()
     print('loading trajectory data')
-    for f in tqdm(pfile): 
+    for f in tqdm(pfile):
         data = hdf5storage.loadmat(f)
         data_by_day.append(data)
     return data_by_day
 
 
 if __name__ == "__main__":
-    BLOCK = 'block1'
     os.environ['BLOCK'] = 'block1'
-    print("Start computation for: ", BLOCK)
+    print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
     compute_all_projections_filtered(parameters, trimmed=False)
 
-    BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
-    print("Start computation for: ", BLOCK)
+    print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
     compute_all_projections_filtered(parameters, trimmed=False)

@@ -1,5 +1,6 @@
 import numpy as np
-from utils.tank_area_config import get_area_functions, get_calibration_functions
+from utils.tank_area_config import get_area_functions, \
+    get_calibration_functions
 import config_processing as config
 
 FUNCS_PX2CM = None
@@ -45,7 +46,7 @@ def pixel_to_cm(pixels, fish_key=None):
     if AREA_FUNCS(fish_key) is None:
         origin = np.array([450, 450])  # default origin
     else:
-        origin = AREA_FUNCS(fish_key)[1]  # origin of the area is the second point
+        origin = AREA_FUNCS(fish_key)[1]  # origin of area is the 2nd point
     pixels = pixels - origin
     if not FUNCS_PX2CM:
         FUNCS_PX2CM = get_calibration_functions()

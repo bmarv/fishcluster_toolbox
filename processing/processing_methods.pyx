@@ -71,7 +71,7 @@ cpdef (double, double) mean_std(np.ndarray[double, ndim=1] data):
     std = sqrt(((data-mean)**2).sum()/data.size)
     return (mean, std)
 
-#### DINSTANCE TO THE WALL --------------
+#### DISTANCE TO THE WALL --------------
 
 cpdef np.ndarray[double, ndim=1] distance_to_wall_chunk(np.ndarray[double, ndim=2] data, np.ndarray[double, ndim=2] area):
     cdef int size
