@@ -1,4 +1,6 @@
-import glob, json, os
+import glob
+import json
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import config_processing as config
@@ -42,6 +44,7 @@ def read_area_data_from_json():
         for k in area_data.keys():
             area_data[k] = np.array(area_data[k])
         return area_data
+
 
 def get_areas():
     area_data = dict()
