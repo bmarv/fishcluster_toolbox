@@ -10,11 +10,12 @@ from training import inferencing
 # PRE-PROCESSING
 tall = time.time()
 parameters = training_processing.initialize_training_parameters()
+parameters.useGPU = 0  # 0 for GPU, -1 for CPU
 mmpy.createProjectDirectory(parameters.projectPath)
 parameters.normalize_func = training_processing\
     .return_normalization_func(parameters)
 print("Subsample from projections")
-trainingSetData, _ = training_processing.subsample_from_projections(parameters)
+trainingSetData = training_processing.subsample_from_projections(parameters)
 
 
 # EMBEDDING

@@ -13,7 +13,6 @@ def umap_inference_for_individual(
     trainingEmbedding,
     parameters,
     projectionFile,
-    zValstr
 ):
     """
     Perform umap inference for individual projections.
@@ -33,7 +32,11 @@ def umap_inference_for_individual(
 
     if parameters.waveletDecomp:
         print('Finding Wavelets')
-        data, f = mmpy.mm_findWavelets(projections, numModes, parameters)
+        data, f = mmpy.motionmapper.mm_findWavelets(
+            projections,
+            numModes,
+            parameters
+        )
         if parameters.useGPU >= 0:
             data = data.get()
     else:
@@ -103,7 +106,11 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
     numModes = parameters.pcaModes
     if parameters.waveletDecomp:
         print('Finding Wavelets')
-        data, f = mmpy.mm_findWavelets(projections, numModes, parameters)
+        data, f = mmpy.motionmapper.mm_findWavelets(
+            projections,
+            numModes,
+            parameters
+        )
         if parameters.useGPU >= 0:
             data = data.get()
     else:

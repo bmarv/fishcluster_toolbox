@@ -104,10 +104,9 @@ def subsample_from_projections(parameters):
             store_python_metadata=False,
             matlab_compatible=True
         )
-        del trainingSetAmps
     else:
         print('Subsampled trainingSetData found, \
             skipping minitSNE and running training tSNE')
         with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
-    return trainingSetData, trainingSetAmps
+    return trainingSetData
