@@ -12,8 +12,8 @@ if not os.path.exists(env):
 
 extensions = [
     Extension(
-        "utils.processing_methods",
-        ["utils/processing_methods.pyx"],
+        "processing.processing_methods",
+        ["processing/processing_methods.pyx"],
         include_dirs=[numpy.get_include()],
     )
 ]
