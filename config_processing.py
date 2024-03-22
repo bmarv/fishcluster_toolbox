@@ -16,6 +16,7 @@ DIR_CSV_LOCAL = os.environ["path_csv_local"]
 PATH_RECORDINGS = os.environ["path_recordings"]
 FRONT, BACK = "front", "back"
 
+
 projectPath = "/Volumes/Extreme_SSD/content/Fish_moves_final"
 CONFIG_DATA = f"{DIR_CSV_LOCAL}/" + os.environ["CONFIG_DATA"]
 VIS_DIR = f"{DIR_CSV_LOCAL}/" + os.environ["VIS_DIR"]
