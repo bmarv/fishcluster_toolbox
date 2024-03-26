@@ -128,7 +128,7 @@ def compute_and_write_projection(
         return None
     print(f"{fk} {day} {X.shape}")
     if X.shape[0] < 1000:
-        print("Skip: number of datapoints to small")
+        print("Skip: number of datapoints too small")
         return None
     if trimmed:
         hdf5storage.write(
@@ -237,11 +237,13 @@ def load_trajectory_data(parameters, fk="", day=""):
 
 
 if __name__ == "__main__":
+    BLOCK = 'block1'
     os.environ['BLOCK'] = 'block1'
     print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
     compute_all_projections_filtered(parameters, trimmed=False)
 
+    BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
     print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
