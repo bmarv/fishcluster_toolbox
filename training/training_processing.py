@@ -27,7 +27,7 @@ def initialize_training_parameters():
             re-embedding points on a learned map.
     """
     parameters = utils.set_parameters()
-    parameters.useGPU = 0  # 0 for GPU, -1 for CPU
+    parameters.useGPU = -1  # 0 for GPU, -1 for CPU
     parameters.training_numPoints = 5000  # Number of points in mini-trainings.
     parameters.trainingSetSize = 72000
     parameters.embedding_batchSize = 30000
