@@ -1,9 +1,4 @@
-cudf-cu12==24.2.2
-cugraph-cu12==24.2.0
-cuml-cu12==24.2.0
-cupy-cuda12x==13.0.0
 Cython==0.29.34
-dask-cudf-cu12==24.2.2
 easydict==1.10
 envbash==1.2.0
 h5py==3.8.0
