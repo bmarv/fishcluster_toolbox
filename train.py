@@ -6,11 +6,12 @@ import motionmapperpy as mmpy
 from training import training_processing
 from training import embedding
 from training import inferencing
+from tqdm import tqdm
 
 # PRE-PROCESSING
 tall = time.time()
-parameters = training_processing.initialize_training_parameters()
 parameters.useGPU = -1  # 0 for GPU, -1 for CPU
+parameters = training_processing.initialize_training_parameters()
 mmpy.createProjectDirectory(parameters.projectPath)
 parameters.normalize_func = training_processing\
     .return_normalization_func(parameters)
@@ -31,9 +32,8 @@ for k in parameters.kmeans_list:
 projectionFiles = glob.glob(
     parameters.projectPath + '/Projections/*pcaModes.mat'
 )
-for i in range(len(projectionFiles)):
+for i in tqdm(range(len(projectionFiles))):
     if os.path.exists(projectionFiles[i][:-4] + '_uVals.mat'):
-        print('Already done. Skipping.\n')
         continue
 
     projections = hdf5storage.loadmat(projectionFiles[i])['projections']

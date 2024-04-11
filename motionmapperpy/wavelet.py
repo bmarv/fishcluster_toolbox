@@ -26,7 +26,7 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
 
     """
     t1 = time.time()
-    print('\t Calculating wavelets, clock starting.')
+    # print('\t Calculating wavelets, clock starting.')
 
     if useGPU>=0:
         try:
@@ -37,13 +37,13 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
             raise E
 
         np.cuda.Device(useGPU).use()
-        print('\t Using GPU #%i'%useGPU)
+        # print('\t Using GPU #%i'%useGPU)
     else:
         import numpy as np
         import multiprocessing as mp
         if numProcessors<0:
             numProcessors = mp.cpu_count()
-        print('\t Using #%i CPUs.' % numProcessors)
+        # print('\t Using #%i CPUs.' % numProcessors)
 
     projections = np.array(projections)
     t1 = time.time()
@@ -71,7 +71,7 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
             pool.close()
             pool.join()
             raise E
-    print('\t Done at %0.02f seconds.'%(time.time()-t1))
+    # print('\t Done at %0.02f seconds.'%(time.time()-t1))
     return amplitudes.T, f
 
 

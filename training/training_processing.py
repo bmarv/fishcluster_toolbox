@@ -27,7 +27,6 @@ def initialize_training_parameters():
             re-embedding points on a learned map.
     """
     parameters = utils.set_parameters()
-    parameters.useGPU = -1  # 0 for GPU, -1 for CPU
     parameters.training_numPoints = 5000  # Number of points in mini-trainings.
     parameters.trainingSetSize = 72000
     parameters.embedding_batchSize = 30000
@@ -105,8 +104,7 @@ def subsample_from_projections(parameters):
             matlab_compatible=True
         )
     else:
-        print('Subsampled trainingSetData found, \
-            skipping minitSNE and running training tSNE')
+        # Subsampled trainingSetData found skipping minitSNE and running training tSNE
         with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
     return trainingSetData

@@ -129,7 +129,7 @@ def setRunParameters(parameters=None):
 
     useGPU = -1
 
-    method = 'TSNE'  # or 'UMAP'
+    method = 'UMAP'  # or 'UMAP'
 
     """%%%%%%%% Wavelet Parameters %%%%%%%%"""
     # %Whether to do wavelet decomposition,

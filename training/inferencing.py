@@ -31,7 +31,7 @@ def umap_inference_for_individual(
     numModes = parameters.pcaModes
 
     if parameters.waveletDecomp:
-        print('Finding Wavelets')
+        # Finding Wavelets
         data, f = mmpy.motionmapper.mm_findWavelets(
             projections,
             numModes,
@@ -40,23 +40,18 @@ def umap_inference_for_individual(
         if parameters.useGPU >= 0:
             data = data.get()
     else:
-        print('Using projections for tSNE. No wavelet decomposition.')
+        # Using projections for tSNE. No wavelet decomposition
         f = 0
         data = projections
     data = data / np.sum(data, 1)[:, None]
 
-    print('Finding Embeddings')
-    t1 = time.time()
-
     umapfolder = parameters['projectPath'] + '/UMAP/'
-    print('\tLoading UMAP Model.')
     with open(umapfolder + 'umap.model', 'rb') as f:
         um = pickle.load(f)
     trainparams = np.load(
         umapfolder + '_trainMeanScale.npy',
         allow_pickle=True
     )
-    print('\tLoaded.')
     embed_negative_sample_rate = parameters['embed_negative_sample_rate']
     um.negative_sample_rate = embed_negative_sample_rate
     zValues = um.transform(data)
@@ -67,7 +62,6 @@ def umap_inference_for_individual(
     outputStatistics.training_scale = trainparams[1]
 
     del data
-    print(f'Embeddings found in {time.time() - t1:0.02f} seconds.')
 
     hdf5storage.write(
         data={'zValues': zValues},
@@ -105,7 +99,7 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
     t1 = time.time()
     numModes = parameters.pcaModes
     if parameters.waveletDecomp:
-        print('Finding Wavelets')
+        # Finding Wavelets
         data, f = mmpy.motionmapper.mm_findWavelets(
             projections,
             numModes,
@@ -114,7 +108,7 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
         if parameters.useGPU >= 0:
             data = data.get()
     else:
-        print('Using projections for tSNE. No wavelet decomposition.')
+        # Using projections for tSNE. No wavelet decomposition
         data = projections
         data = data / np.sum(data, 1)[:, None]
 
@@ -134,7 +128,6 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
             kmeans(k).predict(data)
             ) for k in parameters.kmeans_list]
     )
-    print(f'Embeddings found in {time.time() - t1:0.02f} seconds.')
     for key, value in clusters_dict.items():
         hdf5storage.write(
             data={"clusters": value, "k": int(key.split("_")[1])},

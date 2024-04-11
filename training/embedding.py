@@ -45,7 +45,6 @@ def run_UMAP(data, parameters, save_model=True):
 
     if save_model:
         umapfolder = parameters['projectPath'] + '/UMAP/'
-        print('Saving UMAP model to disk...')
         np.save(
             umapfolder+'_trainMeanScale.npy',
             np.array([trainmean, scale], dtype=object)
@@ -79,13 +78,11 @@ def run_kmeans(k, tsne_directory, trainingSetData, useGPU=-1):
     if useGPU >= 0:
         try:
             from cuml import KMeans
-            print('Using GPU Kmeans')
         except ModuleNotFoundError as E:
             warnings.warn("Trying to use GPU but cuml is not installed.\
                 Install cuml or set parameters.useGPU = -1. ")
             raise E
     else:
-        print('Using CPU Kmeans')
         from sklearn.cluster import MiniBatchKMeans as KMeans
 
     kmeans = KMeans(

@@ -173,7 +173,7 @@ def compute_all_projections(
     if fish_keys is None:
         fish_keys = get_camera_pos_keys()
     numProcessors = mp.cpu_count()
-    for i, fk in enumerate(fish_keys):
+    for i, fk in tqdm(enumerate(fish_keys)):
         t1 = time.time()
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
@@ -200,8 +200,6 @@ def compute_all_projections(
             )
         pool.close()
         pool.join()
-        print(f'\t Processed fish #{i+1:4} {fk} out of {len(fish_keys):4} in \
-            {time.time() - t1:0.02f} seconds.\n')
 
 
 def compute_all_projections_filtered(parameters, trimmed=False):
@@ -229,7 +227,6 @@ def load_trajectory_data(parameters, fk="", day=""):
         parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat'
     )
     pfile.sort()
-    print('loading trajectory data')
     for f in tqdm(pfile):
         data = hdf5storage.loadmat(f)
         data_by_day.append(data)
