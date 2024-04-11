@@ -5,6 +5,7 @@ import hdf5storage
 import time
 from skimage.segmentation import watershed
 from skimage.filters import roberts
+from tqdm import tqdm
 
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ bmapcmap = gencmap()
 
 
 def wshedTransform(zValues, min_regions, sigma, tsnefolder, saveplot=True):
-    print('Starting watershed transform...')
+    # print('Starting watershed transform...')
 
     bounds, xx, density = findPointDensity(zValues, sigma, 610,
                                                    rangeVals=[-np.abs(zValues).max() - 15, np.abs(zValues).max() + 15])
@@ -22,7 +23,7 @@ def wshedTransform(zValues, min_regions, sigma, tsnefolder, saveplot=True):
     wshed[density < 1e-5] = 0
     numRegs = len(np.unique(wshed)) - 1
 
-    if numRegs < min_regions - 10:
+    if numRegs < min_regions - 3:
         raise ValueError('\t Starting sigma %0.1f too high, maximum # wshed regions possible is %i.' %
                          (sigma, numRegs))
 
@@ -167,10 +168,10 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     zValNames = []
     zValLens = []
     ampVels = []
-    for pi, projfile in enumerate(projfiles):
+    for pi, projfile in tqdm(enumerate(projfiles), total=len(projfiles)):
         fname = projfile.split('/')[-1].split('.')[0]
         zValNames.append(fname)
-        print('%i/%i Loading embedding for %s %0.02f seconds.' % (pi + 1, len(projfiles), fname, time.time() - t1))
+        # print('%i/%i Loading embedding for %s %0.02f seconds.' % (pi + 1, len(projfiles), fname, time.time() - t1))
         if parameters.method == 'TSNE':
             zValident = 'zVals' if parameters.waveletDecomp else 'zValsProjs'
         else:
@@ -192,7 +193,7 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     zValNames = np.array(zValNames, dtype=object)
     LL, wbounds, sigma, xx, density = wshedTransform(zValues, minimum_regions, startsigma, tsnefolder, saveplot=True)
 
-    print('Assigning watershed regions...')
+    # print('Assigning watershed regions...')
     watershedRegions = np.digitize(zValues, xx)
     watershedRegions = LL[watershedRegions[:, 1], watershedRegions[:, 0]]
 
@@ -226,7 +227,7 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     hdf5storage.write(data=outdict, path='/', truncate_existing=True,
                           filename=tsnefolder + zVals_wShed_groups, store_python_metadata=False,
                           matlab_compatible=True)
-    print('\t tempsave done.')
+    # print('\t tempsave done.')
 
     groups = makeGroupsAndSegments(watershedRegions, zValLens, min_length=min_length_videos)
     outdict = {'zValues': zValues, 'zValNames': zValNames, 'zValLens': zValLens, 'sigma': sigma, 'xx': xx,
@@ -236,6 +237,6 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
                       filename=tsnefolder + zVals_wShed_groups, store_python_metadata=False,
                       matlab_compatible=True)
 
-    print('All data saved in %s.'%(tsnefolder.split('/')[-2]+'/' + zVals_wShed_groups))
+    print('\tsaved in %s.'%(tsnefolder.split('/')[-2]+'/' + zVals_wShed_groups))
 
 

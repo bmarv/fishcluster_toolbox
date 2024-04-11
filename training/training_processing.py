@@ -33,11 +33,6 @@ def initialize_training_parameters():
 
     utils.createProjectDirectory(parameters.projectPath)
 
-    if parameters.useGPU == 0:
-        from cuml import UMAP  # GPU
-    else:
-        from umap import UMAP
-    parameters.umap_module = UMAP
     return parameters
 
 

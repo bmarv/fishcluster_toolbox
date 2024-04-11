@@ -84,7 +84,7 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
         batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}", [])
     )
     if len(data_in_batches) == 0:
-        print(f"{fish_key} for day {day} is empty! ")
+        # print(f"{fish_key} for day {day} is empty! ")
         return None, None
     daytime_DF = start_time_of_day_to_seconds(day.split("_")[1])\
         * FRAMES_PER_SECOND
@@ -126,9 +126,9 @@ def compute_and_write_projection(
     )
     if X is None:
         return None
-    print(f"{fk} {day} {X.shape}")
+    # print(f"{fk} {day} {X.shape}")
     if X.shape[0] < 1000:
-        print("Skip: number of datapoints too small")
+        # print("Skip: number of datapoints too small")
         return None
     if trimmed:
         hdf5storage.write(
@@ -173,7 +173,7 @@ def compute_all_projections(
     if fish_keys is None:
         fish_keys = get_camera_pos_keys()
     numProcessors = mp.cpu_count()
-    for i, fk in tqdm(enumerate(fish_keys)):
+    for i, fk in tqdm(enumerate(fish_keys), total=len(fish_keys)):
         t1 = time.time()
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
@@ -184,7 +184,7 @@ def compute_all_projections(
             trimmed_directory = projectPath + '/Projections_trimmed'
             if not os.path.exists(trimmed_directory):
                 os.makedirs(trimmed_directory, exist_ok=True)
-                print('trimmed projections directory created')
+                # print('trimmed projections directory created')
             _ = pool.starmap(compute_and_write_projection, [(
                     fk, day, (fk, area_f(fk)),
                     projectPath + f'/Projections_trimmed/{BLOCK}_{fk}_{day}\

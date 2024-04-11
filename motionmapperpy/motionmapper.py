@@ -9,7 +9,6 @@ matplotlib.use('Agg')
 import numpy as np
 from scipy.io import loadmat
 from sklearn.manifold import TSNE
-# import Kmeans as Kmeans depending on whether a GPU is available
 
 import hdf5storage
 from sklearn.neighbors import NearestNeighbors
@@ -20,6 +19,7 @@ from scipy.spatial import Delaunay, distance
 from scipy.optimize import fmin
 import matplotlib.pyplot as plt
 from skimage.filters import roberts
+from tqdm import tqdm
 
 from .wavelet import findWavelets
 from .mmutils import findPointDensity, gencmap
@@ -150,7 +150,7 @@ def findTemplatesFromData(signalData, yData, signalAmps, numPerDataSet, paramete
     kdNeighbors = parameters.kdNeighbors
     minTemplateLength = parameters.minTemplateLength
 
-    print('Finding Templates.')
+    # print('Finding Templates.')
     templates, _, density, _, templateLengths, L, vals = returnTemplates(yData, signalData, minTemplateLength, kdNeighbors)
 
     ####################################################
@@ -214,7 +214,7 @@ def file_embeddingSubSampling(projectionFile, parameters):
     perplexity = parameters.training_perplexity
     numPoints = parameters.training_numPoints
 
-    print('\t Loading Projections')
+    # print('\t Loading Projections')
     try:
         projections = np.array(loadmat(projectionFile, variable_names=['projections'])['projections'])
     except:
@@ -236,7 +236,7 @@ def file_embeddingSubSampling(projectionFile, parameters):
     firstFrame = (N%numPoints)
 
     if parameters.waveletDecomp:
-        print('\t Calculating Wavelets')
+        # print('\t Calculating Wavelets')
         data, _ = mm_findWavelets(projections, numModes, parameters)
         signalIdx = np.indices((data.shape[0],))[0]
         signalIdx = signalIdx[firstFrame:int(firstFrame + (numPoints) * skipLength): skipLength]
@@ -301,9 +301,9 @@ def runEmbeddingSubSampling(projectionDirectory, parameters):
     trainingSetAmps = np.zeros((numPerDataSet * L, 1))
     useIdx = np.ones((numPerDataSet * L), dtype='bool')
 
-    for i in range(L):
+    for i in tqdm(range(L), total=L):
 
-        print('Finding training set contributions from data set %i/%i : \n%s'%(i+1, L, projectionFiles[i]))
+        # print('Finding training set contributions from data set %i/%i : \n%s'%(i+1, L, projectionFiles[i]))
 
         currentIdx = np.arange(numPerDataSet) + (i * numPerDataSet)
 
