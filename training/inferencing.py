@@ -1,3 +1,4 @@
+import gc
 import time
 import numpy as np
 import pickle
@@ -24,9 +25,6 @@ def umap_inference_for_individual(
         amplitudes containing Nt data points.
     :param trainingEmbedding: Nt x 2 array of embeddings.
     :param parameters: motionmapperpy Parameters dictionary.
-    :return: zValues : N x 2 array of embedding results, outputStatistics :
-        dictionary containing other parametric
-    outputs.
     """
     numModes = parameters.pcaModes
 
@@ -55,6 +53,7 @@ def umap_inference_for_individual(
     embed_negative_sample_rate = parameters['embed_negative_sample_rate']
     um.negative_sample_rate = embed_negative_sample_rate
     zValues = um.transform(data)
+    gc.collect()
     zValues = zValues - trainparams[0]
     zValues = zValues * trainparams[1]
     outputStatistics = edict()
@@ -71,15 +70,14 @@ def umap_inference_for_individual(
         store_python_metadata=False,
         matlab_compatible=True
     )
-
+    del zValues
     # Save output statistics
     with open(
         projectionFile[:-4] + '_uVals_outputStatistics.pkl',
         'wb'
     ) as hfile:
         pickle.dump(outputStatistics, hfile)
-    return zValues, outputStatistics
-
+    del outputStatistics
 
 def kmeans_inference_for_individual(projections, parameters, projectionFile):
     """
@@ -92,9 +90,6 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
             configuration settings.
         projectionFile (str): The file path of the projection file.
 
-    Returns:
-        dict: A dictionary containing the clustering results for
-            different values of k.
     """
     t1 = time.time()
     numModes = parameters.pcaModes
@@ -122,12 +117,11 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
                 )
             )
 
-    clusters_dict = dict(
-        [(
-            f"clusters_{k}",
-            kmeans(k).predict(data)
-            ) for k in parameters.kmeans_list]
-    )
+    clusters_dict = {}
+    for k in parameters.kmeans_list:
+        clusters_dict[f"clusters_{k}"] = kmeans(k).predict(data)
+        gc.collect()
+
     for key, value in clusters_dict.items():
         hdf5storage.write(
             data={"clusters": value, "k": int(key.split("_")[1])},
@@ -137,4 +131,5 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
             store_python_metadata=False,
             matlab_compatible=True
         )
-    return clusters_dict
+    del clusters_dict
+    gc.collect()

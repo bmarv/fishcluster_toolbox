@@ -170,6 +170,7 @@ cython_debug/
 **.DS_Store
 
 misc/**.ipynb
+misc/.ignore/
 
 # debugging
 .vscode/

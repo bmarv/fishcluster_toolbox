@@ -3,10 +3,22 @@ import shutil
 import h5py
 import hdf5storage
 import numpy as np
+import glob
+from tqdm import tqdm
 
 from utils import utils
-from processing.data_processing import load_trajectory_data
 import motionmapperpy as mmpy
+
+def load_trajectory_data(parameters, fk="", day=""):
+    data_by_day = []
+    pfile = glob.glob(
+        parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat'
+    )
+    pfile.sort()
+    for f in tqdm(pfile):
+        data = hdf5storage.loadmat(f)
+        data_by_day.append(data)
+    return data_by_day
 
 
 def initialize_training_parameters():
