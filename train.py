@@ -12,13 +12,15 @@ from tqdm import tqdm
 import wandb
 import torch
 
-def run_training(n_neighbors, min_dist, device):
+
+def run_training(n_neighbors, min_dist, data, device):
     # PRE-PROCESSING
     tall = time.time()
     parameters = training_processing.initialize_training_parameters()
-    parameters.useGPU = device  # 0 for GPU, -1 for CPU
     parameters.n_neighbors = n_neighbors
     parameters.min_dist = min_dist
+    parameters.projectPath = data
+    parameters.useGPU = device  # 0 for GPU, -1 for CPU
     init_wandb(parameters)
     if parameters.useGPU == 0:
         from cuml import UMAP  # GPU
@@ -32,7 +34,6 @@ def run_training(n_neighbors, min_dist, device):
     print("Subsampling from Projections")
     trainingSetData = training_processing.subsample_from_projections(parameters)
 
-
     # EMBEDDING
     print('Embedding using UMAP and K-Means')
     trainingEmbedding = embedding.run_UMAP(trainingSetData, parameters)
@@ -41,7 +42,6 @@ def run_training(n_neighbors, min_dist, device):
     for k in parameters.kmeans_list:
         if not os.path.exists(tfolder + f'/kmeans_{k}.pkl'):
             embedding.run_kmeans(k, tfolder, trainingSetData, parameters.useGPU)
-
 
     # INFERENCING
     print('Inferencing using UMAP and K-Means')
@@ -88,24 +88,28 @@ def run_training(n_neighbors, min_dist, device):
         )
     wandb.finish()
 
+
 def init_wandb(params):
     wandb.init(
         project="pe_training",
         config=params
     )
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="embedding and inferencing using umap and kmeans"
     )
-    parser.add_argument("--n_neighbors", required=True, type=int)
-    parser.add_argument("--min_dist", required=True, type=float)
-    parser.add_argument("--device", required=True, type=int)
+    parser.add_argument("--n_neighbors", required=True, type=int, default=15)
+    parser.add_argument("--min_dist", required=True, type=float, default=0.1)
+    parser.add_argument("--data", required=True, type=str, default='/mnt/')
+    parser.add_argument("--device", required=True, type=int, default=0)
     args = parser.parse_args()
 
     n_neighbors = args.n_neighbors
     min_dist = args.min_dist
+    data = args.data
     device = args.device
     
     print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}')
-    run_training(n_neighbors, min_dist, device)
+    run_training(n_neighbors, min_dist, data, device)
