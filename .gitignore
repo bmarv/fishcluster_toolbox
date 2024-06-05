@@ -174,3 +174,4 @@ misc/.ignore/
 
 # debugging
 .vscode/
+notebooks/
