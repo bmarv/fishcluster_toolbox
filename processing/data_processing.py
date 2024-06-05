@@ -23,6 +23,13 @@ from config import BLOCK, BACK, BATCH_SIZE, FRAMES_PER_SECOND
 WAVELET = 'wavelet'
 clusterStr = 'clusters'
 
+# testing values for front el
+circular_walls = [
+    {"center": [1800, 750], "radius": 200},
+    {"center": [1250, 1050], "radius": 25},
+    {"center": [1000, 500], "radius": 25}
+]
+
 
 def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
     """
@@ -38,7 +45,8 @@ def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
     data, new_area = normalize_origin_of_compartment(data, area, BACK in fk)
     steps = px2cm(compute_step_lengths(data))
     t_a = compute_turning_angles(data)
-    wall = px2cm(distance_to_wall_chunk(data, new_area))
+    # TODO: still wip for distance_to_wall_chunk with circular wall definitions
+    wall = px2cm(distance_to_wall_chunk(data, new_area, circular_walls))
     f3 = update_filter_three_points(steps, filter_index)
     X = np.array((
             frame_idx[1:-1],
@@ -242,6 +250,12 @@ if __name__ == "__main__":
 
     BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
+    print("Start computation for: ", os.environ['BLOCK'])
+    parameters = set_parameters()
+    compute_all_projections_filtered(parameters, trimmed=False)
+   
+    BLOCK = 'block3'
+    os.environ['BLOCK'] = 'block3'
     print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
     compute_all_projections_filtered(parameters, trimmed=False)
