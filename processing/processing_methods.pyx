@@ -73,14 +73,28 @@ cpdef (double, double) mean_std(np.ndarray[double, ndim=1] data):
 
 #### DISTANCE TO THE WALL --------------
 
-cpdef np.ndarray[double, ndim=1] distance_to_wall_chunk(np.ndarray[double, ndim=2] data, np.ndarray[double, ndim=2] area):
-    cdef int size
-    size = data.shape[0]
-    cdef np.ndarray[double, ndim=1] dists
-    cdef np.ndarray[double, ndim=2] abcn = calc_wall_lines(area)
-    #for i in range(size):
-    dists = min_distance(data, abcn)
+cdef np.ndarray[double, ndim=2] distance_to_line(
+    np.ndarray[double, ndim=1] x,
+    np.ndarray[double, ndim=1] y,
+    np.ndarray[double, ndim=1] a,
+    np.ndarray[double, ndim=1] b, np.ndarray[double, ndim=1] c,
+    np.ndarray[double, ndim=1] n):
+    
+    cdef int size = x.shape[0]
+    cdef int n_lines = a.shape[0]
+    cdef np.ndarray[double, ndim=2] dists = np.zeros((n_lines, size))
+    cdef int i, j
+    for i in range(n_lines):
+        for j in range(size):
+            dists[i, j] = abs(a[i] * x[j] + b[i] * y[j] + c[i]) / n[i]
     return dists
+
+cdef double distance_to_circle(double[2] point, double[2] center, double radius):
+    cdef double dx = point[0] - center[0]
+    cdef double dy = point[1] - center[1]
+    cdef double distance_to_center = sqrt(dx**2 + dy**2)
+    cdef double distance_to_circle = max(0, distance_to_center - radius)
+    return distance_to_circle
 
 cdef np.ndarray[double, ndim=2] calc_wall_lines(np.ndarray[double, ndim=2] area):
     cdef np.ndarray[double, ndim=2] abcn = np.zeros((area.shape[0], 4))
@@ -88,23 +102,45 @@ cdef np.ndarray[double, ndim=2] calc_wall_lines(np.ndarray[double, ndim=2] area)
     cdef int size = area.shape[0]
     cdef double v1, v2, x, y
     for i in range(size):
-        v1,v2 = area[(i+1) % size]-area[i]
-        abcn[i,0] = v2 # a
-        abcn[i,1] = -v1 # b
-        x,y = area[i]
-        abcn[i,2] = y*v1-v2*x # c
-        abcn[i,3]=norm(v2,v1) # norm(a,b)
+        v1, v2 = area[(i+1) % size] - area[i]
+        abcn[i, 0] = v2  # a
+        abcn[i, 1] = -v1  # b
+        x, y = area[i]
+        abcn[i, 2] = y * v1 - v2 * x  # c
+        abcn[i, 3] = norm(v2, v1)  # norm(a, b)
     return abcn
 
-cdef np.ndarray[double, ndim=1] min_distance(np.ndarray[double, ndim=2] data, np.ndarray[double, ndim=2] abcn):
+cdef np.ndarray[double, ndim=1] min_distance(np.ndarray[double, ndim=2] data, np.ndarray[double, ndim=2] abcn, list circular_walls):
     cdef np.ndarray[double, ndim=2] min_dists
-    min_dists = distance_to_line(data[:,0], data[:,1], abcn[:,0], abcn[:,1], abcn[:,2], abcn[:,3])
-    return np.min(min_dists, axis=0)
+    cdef np.ndarray[double, ndim=1] dists_to_lines
+    cdef int i, j
+    cdef double cx, cy, radius, dist_to_circle
+    cdef double min_dist
+    cdef double[2] point, center
 
-cdef np.ndarray[double, ndim=2] distance_to_line(
-    np.ndarray[double, ndim=1] x,
-    np.ndarray[double, ndim=1] y,
-    np.ndarray[double, ndim=1] a,
-    np.ndarray[double, ndim=1] b, np.ndarray[double, ndim=1] c,
-    np.ndarray[double, ndim=1] n):
-    return np.abs(a[:,np.newaxis]*x+b[:,np.newaxis]*y+c[:,np.newaxis])/n[:,np.newaxis]
+    min_dists = distance_to_line(data[:, 0], data[:, 1], abcn[:, 0], abcn[:, 1], abcn[:, 2], abcn[:, 3])
+    
+    # Initialize the distances array with the minimum distance to lines
+    dists_to_lines = np.min(min_dists, axis=0)
+
+    # Calculate the distance to each circular wall and update the minimum distance
+    for i in range(data.shape[0]):
+        min_dist = dists_to_lines[i]
+        point[0], point[1] = data[i, 0], data[i, 1]
+        for circle in circular_walls:
+            cx, cy = circle['center']
+            radius = circle['radius']
+            center[0], center[1] = cx, cy
+            dist_to_circle = distance_to_circle(point, center, radius)
+            if dist_to_circle < min_dist:
+                min_dist = dist_to_circle
+        dists_to_lines[i] = min_dist
+
+    return dists_to_lines
+
+cpdef np.ndarray[double, ndim=1] distance_to_wall_chunk(np.ndarray[double, ndim=2] data, np.ndarray[double, ndim=2] area, list circular_walls):
+    cdef int size = data.shape[0]
+    cdef np.ndarray[double, ndim=1] dists
+    cdef np.ndarray[double, ndim=2] abcn = calc_wall_lines(area)
+    dists = min_distance(data, abcn, circular_walls)
+    return dists

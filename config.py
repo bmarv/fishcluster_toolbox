@@ -22,4 +22,5 @@ FRAMES_PER_SECOND = 5
 projectPath = os.environ["projectPath"]
 BLOCK1 = os.environ["BLOCK1"]
 BLOCK2 = os.environ["BLOCK2"]
+BLOCK3 = os.environ["BLOCK3"]
 BLOCK = os.environ["BLOCK"]
