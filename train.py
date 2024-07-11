@@ -102,7 +102,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--n_neighbors", required=True, type=int, default=15)
     parser.add_argument("--min_dist", required=True, type=float, default=0.1)
-    parser.add_argument("--data", required=True, type=str, default='/mnt/')
+    parser.add_argument("--data", required=True, type=str, default='/mnt')
     parser.add_argument("--device", required=True, type=int, default=0)
     args = parser.parse_args()
 
@@ -111,5 +111,5 @@ if __name__ == "__main__":
     data = args.data
     device = args.device
     
-    print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}')
+    print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}, data: {data}, device: {device}')
     run_training(n_neighbors, min_dist, data, device)
