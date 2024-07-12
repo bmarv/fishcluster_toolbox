@@ -83,7 +83,8 @@ def run_training(n_neighbors, min_dist, data, device, threads_cpu):
             wandb.log({"inferencing/step": i})
 
     else:
-        # projectionFiles_rand = random.shuffle(projectionFiles)
+        if threads_cpu == -1:
+            threads_cpu = mp.cpu_count() - 1 # utilize all cpu cores if nothing specific specified
         inferencing_batches = [projectionFiles[i::threads_cpu] for i in range(threads_cpu)]
         parameters.normalize_func = None # TODO: AttributeError: Can't pickle local object 'return_normalization_func.<locals>.<lambda>' because that is not a top level / global function for multiprocessing to make sense
         with Pool(threads_cpu) as pool:
