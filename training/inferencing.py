@@ -14,6 +14,7 @@ def umap_inference_for_individual(
     trainingEmbedding,
     parameters,
     projectionFile,
+    umap_model
 ):
     """
     Perform umap inference for individual projections.
@@ -44,8 +45,9 @@ def umap_inference_for_individual(
     data = data / np.sum(data, 1)[:, None]
 
     umapfolder = parameters['projectPath'] + '/UMAP/'
-    with open(umapfolder + 'umap.model', 'rb') as f:
-        um = pickle.load(f)
+    # with open(umapfolder + 'umap.model', 'rb') as f:
+    #     um = pickle.load(f)
+    um = umap_model
     trainparams = np.load(
         umapfolder + '_trainMeanScale.npy',
         allow_pickle=True
@@ -79,7 +81,7 @@ def umap_inference_for_individual(
         pickle.dump(outputStatistics, hfile)
     del outputStatistics
 
-def kmeans_inference_for_individual(projections, parameters, projectionFile):
+def kmeans_inference_for_individual(projections, parameters, projectionFile, kmeans_models):
     """
     Perform k-means inference for individual projections.
     Based on motionmapperpy.
@@ -118,9 +120,13 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile):
             )
 
     clusters_dict = {}
-    for k in parameters.kmeans_list:
-        clusters_dict[f"clusters_{k}"] = kmeans(k).predict(data)
-        gc.collect()
+    for idx, k in enumerate(parameters.kmeans_list):
+        if parameters.useGPU == 0:
+            clusters_dict[f"clusters_{k}"] = kmeans(k).predict(data)
+            gc.collect()
+        else:
+            clusters_dict[f"clusters_{k}"] = kmeans_models[idx].predict(data)
+            gc.collect()
 
     for key, value in clusters_dict.items():
         hdf5storage.write(

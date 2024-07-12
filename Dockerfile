@@ -4,16 +4,20 @@ COPY requirements.txt /tmp/requirements.txt
 COPY --from=continuumio/miniconda3 /opt/conda /opt/conda
 ENV PATH=/opt/conda/bin:$PATH
 
-RUN conda create -n rapids-24.06 -c rapidsai-nightly -c conda-forge -c nvidia  \
-    rapids=24.06 python=3.9 cuda-version=12.2 -y
+RUN conda create -n training_cpu python=3.9 -y
 
-RUN conda init; . ~/.bashrc; conda activate rapids-24.06; pip install -r /tmp/requirements.txt; pip install torch
-RUN . ~/.bashrc; conda activate rapids-24.06; pip install wandb
+RUN conda init; . ~/.bashrc; conda activate training_cpu; pip install -r /tmp/requirements.txt; pip install torch
+RUN . ~/.bashrc; conda activate training_cpu; pip install wandb; pip install --upgrade tbb
 
 RUN apt update
 RUN apt install nano less -y
 
-RUN . ~/.bashrc; conda config --set auto_activate_base false; echo "conda activate rapids-24.06" >> ~/.bashrc
+RUN . ~/.bashrc; conda config --set auto_activate_base false; echo "conda activate training_cpu" >> ~/.bashrc
+# resetting the Threading layer to tbb to prevent unsafe fork() calls in OpenMP using umap
+# -> https://stackoverflow.com/questions/68131348/training-a-python-umap-model-hangs-in-a-multiprocessing-process
+RUN export LD_LIBRARY_PATH=/opt/conda/envs/training_cpu/lib/libtbb.so 
+
+# MANUAL
 RUN echo 'echo "\n\nWelcome to Container ${HOSTNAME} of the fishcluster_toolbox image. \
     \nPlease make sure to specify the API-Key of Weights and Biases using \
     \n\t>>wandb login \

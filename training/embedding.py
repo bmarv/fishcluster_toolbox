@@ -52,7 +52,7 @@ def run_UMAP(data, parameters, save_model=True):
         with open(umapfolder+'umap.model', 'wb') as f:
             pickle.dump(um, f)
 
-    return y
+    return y, um
 
 
 def run_kmeans(k, tsne_directory, trainingSetData, useGPU=-1):

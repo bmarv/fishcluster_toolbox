@@ -60,17 +60,21 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
         for i in range(pcaModes):
             amplitudes[i*numPeriods:(i+1)*numPeriods] = fastWavelet_morlet_convolution_parallel(i, projections[:, i], f, omega0, dt, useGPU)
     else:
-        try:
-            pool = mp.Pool(numProcessors)
-            amplitudes = pool.starmap(fastWavelet_morlet_convolution_parallel,
-                                      [(i, projections[:, i], f, omega0, dt, useGPU) for i in range(pcaModes)])
-            amplitudes = np.concatenate(amplitudes, 0)
-            pool.close()
-            pool.join()
-        except Exception as E:
-            pool.close()
-            pool.join()
-            raise E
+        # try:
+        #     pool = mp.Pool(numProcessors)
+        #     amplitudes = pool.starmap(fastWavelet_morlet_convolution_parallel,
+        #                               [(i, projections[:, i], f, omega0, dt, useGPU) for i in range(pcaModes)])
+        #     amplitudes = np.concatenate(amplitudes, 0)
+        #     pool.close()
+        #     pool.join()
+        # except Exception as E:
+        #     pool.close()
+        #     pool.join()
+        #     raise E
+        amplitudes = np.zeros((numPeriods*pcaModes,N))
+        for i in range(pcaModes):
+            amplitudes[i*numPeriods:(i+1)*numPeriods] = fastWavelet_morlet_convolution_parallel(i, projections[:, i], f, omega0, dt, useGPU)
+        
     # print('\t Done at %0.02f seconds.'%(time.time()-t1))
     return amplitudes.T, f
 
