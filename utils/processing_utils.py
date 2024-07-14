@@ -13,9 +13,9 @@ def get_directory(is_back=None):
     if is_back is None:
         raise Exception("define kwargs is_back")
     if is_back:
-        return f'{projectPath}/PE_tracks_final_{BLOCK}/PE_tracks_final_{BLOCK}_back'
+        return f'{projectPath}/FE_tracks_060000_{BLOCK}/FE_{BLOCK}_060000_back_final'
     else:
-        return f'{projectPath}/PE_tracks_final_{BLOCK}/PE_tracks_final_{BLOCK}_front'
+        return f'{projectPath}/FE_tracks_060000_{BLOCK}/FE_{BLOCK}_060000_front_final'
 
 
 def get_camera_names(is_back=False):
