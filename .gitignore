@@ -173,3 +173,4 @@ misc/**.ipynb
 
 # debugging
 .vscode/
+notebooks/
