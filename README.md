@@ -6,6 +6,8 @@
     </figure>
 </p>
 
+--- 
+
 This repository provides a comprehensive set of tools for conducting behavioural analyses on timeseries data. It includes unsupervised machine learning algorithms for embedding and inferencing using UMAP and K-Means. Clustering clustering enables data for downstream analyses regarding entropy measures.
 
 
