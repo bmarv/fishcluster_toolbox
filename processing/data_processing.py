@@ -84,7 +84,6 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
         batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}", [])
     )
     if len(data_in_batches) == 0:
-        # print(f"{fish_key} for day {day} is empty! ")
         return None, None
     daytime_DF = start_time_of_day_to_seconds(day.split("_")[1])\
         * FRAMES_PER_SECOND
@@ -174,7 +173,6 @@ def compute_all_projections(
         fish_keys = get_camera_pos_keys()
     numProcessors = mp.cpu_count()
     for i, fk in tqdm(enumerate(fish_keys), total=len(fish_keys)):
-        t1 = time.time()
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
             camera=fk.split("_")[0],
