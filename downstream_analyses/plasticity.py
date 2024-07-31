@@ -381,7 +381,7 @@ def for_all_cluster_entropy(parameters, fish_ids, cluster_sizes_list):
 if __name__ == "__main__":
     parameters = set_parameters()
     fks = get_individuals_keys(parameters)
-    cluster_sizes_list = [5, 7, 10, 20]  # account for different cluster sizes
+    cluster_sizes_list = parameters.kmeans_list
     for_all_cluster_entropy(parameters, fks, cluster_sizes_list)
     for flag in [True, False]:
         compute_coefficient_of_variation(

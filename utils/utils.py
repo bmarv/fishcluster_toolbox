@@ -322,7 +322,7 @@ def set_parameters(parameters=None):
     parameters.numProcessors = 10
     parameters.method = "UMAP"
     parameters.kmeans = 10
-    parameters.kmeans_list = [5, 7, 10, 20, 50, 100]
+    parameters.kmeans_list = [5, 7, 10, 20]
     parameters.projectPath = projectPath
     os.makedirs(parameters.projectPath, exist_ok=True)
     createProjectDirectory(parameters.projectPath)

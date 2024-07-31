@@ -579,7 +579,7 @@ if __name__ == "__main__":
     fks = get_individuals_keys(parameters)
     parameters = set_parameters()
     raw_data_path = parameters.projectPath
-    cluster_sizes_list = [5, 7, 10, 20]
+    cluster_sizes_list = parameters.kmeans_list
     cluster_sizes_str_list = [str(num).zfill(3) for num in cluster_sizes_list]
     metadata_path = parameters.projectPath + \
         '/FE_Metadata_for_Entropy_models.xlsx'
