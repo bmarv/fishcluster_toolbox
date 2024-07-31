@@ -84,6 +84,7 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
         batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}", [])
     )
     if len(data_in_batches) == 0:
+        # print(f"{fish_key} for day {day} is empty! ")
         return None, None
     daytime_DF = start_time_of_day_to_seconds(day.split("_")[1])\
         * FRAMES_PER_SECOND
