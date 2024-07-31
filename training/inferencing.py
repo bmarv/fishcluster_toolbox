@@ -1,5 +1,4 @@
 import gc
-import time
 import numpy as np
 import pickle
 import hdf5storage
@@ -36,17 +35,9 @@ def umap_inference_for_individual(
             numModes,
             parameters
         )
-        if parameters.useGPU >= 0:
-            data = data.get()
-    else:
-        # Using projections for tSNE. No wavelet decomposition
-        f = 0
-        data = projections
     data = data / np.sum(data, 1)[:, None]
 
     umapfolder = parameters['projectPath'] + '/UMAP/'
-    # with open(umapfolder + 'umap.model', 'rb') as f:
-    #     um = pickle.load(f)
     um = umap_model
     trainparams = np.load(
         umapfolder + '_trainMeanScale.npy',
@@ -73,7 +64,6 @@ def umap_inference_for_individual(
         matlab_compatible=True
     )
     del zValues
-    # Save output statistics
     with open(
         projectionFile[:-4] + '_uVals_outputStatistics.pkl',
         'wb'
@@ -81,7 +71,13 @@ def umap_inference_for_individual(
         pickle.dump(outputStatistics, hfile)
     del outputStatistics
 
-def kmeans_inference_for_individual(projections, parameters, projectionFile, kmeans_models):
+
+def kmeans_inference_for_individual(
+    projections,
+    parameters,
+    projectionFile,
+    kmeans_models
+):
     """
     Perform k-means inference for individual projections.
     Based on motionmapperpy.
@@ -93,21 +89,13 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile, kme
         projectionFile (str): The file path of the projection file.
 
     """
-    t1 = time.time()
     numModes = parameters.pcaModes
     if parameters.waveletDecomp:
-        # Finding Wavelets
         data, f = mmpy.motionmapper.mm_findWavelets(
             projections,
             numModes,
             parameters
         )
-        if parameters.useGPU >= 0:
-            data = data.get()
-    else:
-        # Using projections for tSNE. No wavelet decomposition
-        data = projections
-        data = data / np.sum(data, 1)[:, None]
 
     def kmeans(k):
         return pickle.load(
@@ -121,12 +109,7 @@ def kmeans_inference_for_individual(projections, parameters, projectionFile, kme
 
     clusters_dict = {}
     for idx, k in enumerate(parameters.kmeans_list):
-        if parameters.useGPU == 0:
-            clusters_dict[f"clusters_{k}"] = kmeans(k).predict(data)
-            gc.collect()
-        else:
-            clusters_dict[f"clusters_{k}"] = kmeans_models[idx].predict(data)
-            gc.collect()
+        clusters_dict[f"clusters_{k}"] = kmeans_models[idx].predict(data)
 
     for key, value in clusters_dict.items():
         hdf5storage.write(

@@ -9,6 +9,7 @@ from tqdm import tqdm
 from utils import utils
 import motionmapperpy as mmpy
 
+
 def load_trajectory_data(parameters, fk="", day=""):
     data_by_day = []
     pfile = glob.glob(
@@ -111,7 +112,6 @@ def subsample_from_projections(parameters):
             matlab_compatible=True
         )
     else:
-        # Subsampled trainingSetData found skipping minitSNE and running training tSNE
         with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
     return trainingSetData

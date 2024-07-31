@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
-import warnings
+from umap import UMAP
+from sklearn.cluster import MiniBatchKMeans as KMeans
 
 
 def run_UMAP(data, parameters, save_model=True):
@@ -28,8 +29,6 @@ def run_UMAP(data, parameters, save_model=True):
     if ~np.all(vals == 1):
         data = data / vals[:, None]
 
-    UMAP = parameters.umap_module
-
     um = UMAP(
         n_neighbors=parameters['n_neighbors'],
         negative_sample_rate=parameters['train_negative_sample_rate'],
@@ -55,7 +54,7 @@ def run_UMAP(data, parameters, save_model=True):
     return y, um
 
 
-def run_kmeans(k, tsne_directory, trainingSetData, useGPU=-1):
+def run_kmeans(k, tsne_directory, trainingSetData):
     """
     Runs the K-means clustering algorithm on the training set data.
     Based on motionmapperpy.
@@ -64,27 +63,10 @@ def run_kmeans(k, tsne_directory, trainingSetData, useGPU=-1):
         k (int): The number of clusters to create.
         tsne_directory (str): The directory to save the K-means model.
         trainingSetData (array-like): The training set data to be clustered.
-        useGPU (int, optional): Specifies whether to use GPU for K-means.
-            Default is -1, which means CPU is used.
 
     Returns:
         kmeans: The trained K-means model.
-
-    Raises:
-        ModuleNotFoundError: If GPU-usage is expected
-            but cuml is not installed.
-
     """
-    if useGPU >= 0:
-        try:
-            from cuml import KMeans
-        except ModuleNotFoundError as E:
-            warnings.warn("Trying to use GPU but cuml is not installed.\
-                Install cuml or set parameters.useGPU = -1. ")
-            raise E
-    else:
-        from sklearn.cluster import MiniBatchKMeans as KMeans
-
     kmeans = KMeans(
         n_clusters=k,
         random_state=0
