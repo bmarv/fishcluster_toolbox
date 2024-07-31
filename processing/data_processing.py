@@ -174,7 +174,6 @@ def compute_all_projections(
         fish_keys = get_camera_pos_keys()
     numProcessors = mp.cpu_count()
     for i, fk in tqdm(enumerate(fish_keys), total=len(fish_keys)):
-        t1 = time.time()
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
             camera=fk.split("_")[0],
