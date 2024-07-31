@@ -59,7 +59,7 @@ def get_regions_for_fish_key(wshedfile, fish_key="", day=""):
         idx_p = [0, wshedfile['zValLens'].flatten().cumsum()[index_fk[-1]]]
     else:
         idx_p = wshedfile['zValLens'].flatten().cumsum()[
-            [index_fk[0]-1, index_fk[-1]]
+            [index_fk[0] - 1, index_fk[-1]]
         ]
     return wshedfile['watershedRegions'].flatten()[idx_p[0]:idx_p[1]]
 
@@ -71,7 +71,7 @@ def load_clusters(parameters, fk="", day="", k=None):
     pfile = glob.glob(
         parameters.projectPath +
         f'/Projections/{fk}*_{day}*_pcaModes_{clusterStr}_{k}.mat'
-        )
+    )
     pfile.sort()
     for f in pfile:
         data = hdf5storage.loadmat(f)
@@ -92,7 +92,7 @@ def load_clusters_concat(parameters, fk="", day="", k=None):
 def load_trajectory_data(parameters, fk="", day=""):
     data_by_day = []
     pfile = glob.glob(
-        parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat'
+        parameters.projectPath + f'/Projections/{fk}*_{day}*_pcaModes.mat'
     )
     pfile.sort()
     for f in pfile:
@@ -105,7 +105,7 @@ def load_trajectory_data_concat(parameters, fk="", day=""):
     data_by_day = load_trajectory_data(parameters, fk, day)
     if len(data_by_day) == 0:
         return None
-    daily_df = 5*(60**2)*8
+    daily_df = 5 * (60**2) * 8
     positions = np.concatenate([trj["positions"] for trj in data_by_day])
     projections = np.concatenate([trj["projections"] for trj in data_by_day])
     days = sorted(list(set(map(
@@ -114,7 +114,7 @@ def load_trajectory_data_concat(parameters, fk="", day=""):
     ))))
     df_time_index = np.concatenate([
         trj["df_time_index"].flatten() +
-        (daily_df*days.index(trj["day"].flatten()[0].split("_")[0]))
+        (daily_df * days.index(trj["day"].flatten()[0].split("_")[0]))
         for trj in data_by_day
     ])
     area = data_by_day[0]["area"]
