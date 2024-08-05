@@ -43,12 +43,12 @@ def run_UMAP(data, parameters, save_model=True):
     y = y * scale
 
     if save_model:
-        umapfolder = parameters['projectPath'] + '/UMAP/'
+        modelsfolder = parameters['projectPath'] + '/Models/'
         np.save(
-            umapfolder+'_trainMeanScale.npy',
+            modelsfolder+'_trainMeanScale.npy',
             np.array([trainmean, scale], dtype=object)
         )
-        with open(umapfolder+'umap.model', 'wb') as f:
+        with open(modelsfolder+'umap.model', 'wb') as f:
             pickle.dump(um, f)
 
     return y, um

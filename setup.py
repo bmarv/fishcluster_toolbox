@@ -4,11 +4,11 @@ import numpy
 import os
 import shutil
 
-env = "config_processing.env"
-env_default = "scripts/env.default.sh"
+# env = "config_processing.env"
+# env_default = "scripts/env.default.sh"
 
-if not os.path.exists(env):
-    shutil.copyfile(env_default, env)
+# if not os.path.exists(env):
+#     shutil.copyfile(env_default, env)
 
 
 extensions = [

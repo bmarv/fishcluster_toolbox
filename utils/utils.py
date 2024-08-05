@@ -299,7 +299,7 @@ def createProjectDirectory(pathToProject):
     _dirs = [
         pathToProject,
         f'{pathToProject}/Projections',
-        f'{pathToProject}/UMAP'
+        f'{pathToProject}/Models'
     ]
     for d in _dirs:
         if not os.path.exists(d):

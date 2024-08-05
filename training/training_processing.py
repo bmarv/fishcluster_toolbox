@@ -44,8 +44,6 @@ def initialize_training_parameters():
     parameters.trainingSetSize = 72000
     parameters.embedding_batchSize = 30000
 
-    utils.createProjectDirectory(parameters.projectPath)
-
     return parameters
 
 
@@ -81,24 +79,24 @@ def subsample_from_projections(parameters):
         training data and training amplitudes.
     """
     projection_directory = parameters.projectPath+'/Projections/'
-    tsne_directory = parameters.projectPath + '/UMAP/'
+    model_directory = parameters.projectPath + '/Models/'
 
-    if not os.path.exists(tsne_directory+'training_data.mat'):
+    if not os.path.exists(model_directory+'training_data.mat'):
         trainingSetData, trainingSetAmps, _ = mmpy.runEmbeddingSubSampling(
             projection_directory,
             parameters
         )
-        if os.path.exists(tsne_directory):
-            shutil.rmtree(tsne_directory)
-            os.mkdir(tsne_directory)
+        if os.path.exists(model_directory):
+            shutil.rmtree(model_directory)
+            os.mkdir(model_directory)
         else:
-            os.mkdir(tsne_directory)
+            os.mkdir(model_directory)
 
         hdf5storage.write(
             data={'trainingSetData': trainingSetData},
             path='/',
             truncate_existing=True,
-            filename=tsne_directory+'/training_data.mat',
+            filename=model_directory+'/training_data.mat',
             store_python_metadata=False,
             matlab_compatible=True
         )
@@ -107,11 +105,11 @@ def subsample_from_projections(parameters):
             data={'trainingSetAmps': trainingSetAmps},
             path='/',
             truncate_existing=True,
-            filename=tsne_directory + '/training_amps.mat',
+            filename=model_directory + '/training_amps.mat',
             store_python_metadata=False,
             matlab_compatible=True
         )
     else:
-        with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
+        with h5py.File(model_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
     return trainingSetData

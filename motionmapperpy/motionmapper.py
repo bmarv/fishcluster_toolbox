@@ -50,7 +50,7 @@ def run_UMAP(data, parameters, save_model=True):
     if ~np.all(vals == 1):
         data = data / vals[:, None]
 
-    umapfolder = parameters['projectPath'] + '/UMAP/'
+    modelsfolder = parameters['projectPath'] + '/Models/'
     n_neighbors, train_negative_sample_rate, min_dist, umap_output_dims, n_training_epochs = parameters['n_neighbors'], \
                                             parameters['train_negative_sample_rate'], parameters['min_dist'], \
                                             parameters['umap_output_dims'], parameters['n_training_epochs']
@@ -68,8 +68,8 @@ def run_UMAP(data, parameters, save_model=True):
 
     if save_model:
         print('Saving UMAP model to disk...')
-        np.save(umapfolder+'_trainMeanScale.npy', np.array([trainmean, scale], dtype=object))
-        with open(umapfolder+'umap.model', 'wb') as f:
+        np.save(modelsfolder+'_trainMeanScale.npy', np.array([trainmean, scale], dtype=object))
+        with open(modelsfolder+'umap.model', 'wb') as f:
             pickle.dump(um, f)
 
     return y
@@ -328,11 +328,11 @@ def subsampled_tsne_from_projections(parameters,results_directory):
     projection_directory = results_directory+'/Projections/'
     if parameters.method == 'TSNE':
         if parameters.waveletDecomp:
-            tsne_directory= results_directory+'/TSNE/'
+            models_directory= results_directory+'/TSNE/'
         else:
-            tsne_directory = results_directory + '/TSNE_Projections/'
+            models_directory = results_directory + '/TSNE_Projections/'
 
-        parameters.tsne_directory = tsne_directory
+        parameters.tsne_directory = models_directory
 
         parameters.tsne_readout = 50
 
@@ -342,34 +342,34 @@ def subsampled_tsne_from_projections(parameters,results_directory):
             parameters.tSNE_method = 'barnes_hut'
 
     elif parameters.method == 'UMAP':
-        tsne_directory = results_directory + '/UMAP/'
+        models_directory = results_directory + '/Models/'
         if not parameters.waveletDecomp:
             raise ValueError('Wavelet decomposition needed to run UMAP implementation.')
     else:
         raise ValueError('Supported parameter.method are \'TSNE\' or \'UMAP\'')
 
     print('Finding Training Set')
-    if not os.path.exists(tsne_directory+'training_data.mat'):
+    if not os.path.exists(models_directory+'training_data.mat'):
         trainingSetData,trainingSetAmps,_ = runEmbeddingSubSampling(projection_directory,parameters)
-        if os.path.exists(tsne_directory):
-            shutil.rmtree(tsne_directory)
-            os.mkdir(tsne_directory)
+        if os.path.exists(models_directory):
+            shutil.rmtree(models_directory)
+            os.mkdir(models_directory)
         else:
-            os.mkdir(tsne_directory)
+            os.mkdir(models_directory)
 
         hdf5storage.write(data={'trainingSetData': trainingSetData}, path='/', truncate_existing=True,
-                          filename=tsne_directory+'/training_data.mat', store_python_metadata=False,
+                          filename=models_directory+'/training_data.mat', store_python_metadata=False,
                           matlab_compatible=True)
 
         hdf5storage.write(data={'trainingSetAmps': trainingSetAmps}, path='/', truncate_existing=True,
-                          filename=tsne_directory + '/training_amps.mat', store_python_metadata=False,
+                          filename=models_directory + '/training_amps.mat', store_python_metadata=False,
                           matlab_compatible=True)
 
 
         del trainingSetAmps
     else:
         print('Subsampled trainingSetData found, skipping minitSNE and running training tSNE')
-        with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
+        with h5py.File(models_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
 
     # %% Run t-SNE on training set
@@ -387,7 +387,7 @@ def subsampled_tsne_from_projections(parameters,results_directory):
     else:
         raise ValueError('Supported parameter.method are \'TSNE\' or \'UMAP\'')
     hdf5storage.write(data={'trainingEmbedding': trainingEmbedding}, path='/', truncate_existing=True,
-                      filename=tsne_directory + '/training_embedding.mat', store_python_metadata=False,
+                      filename=models_directory + '/training_embedding.mat', store_python_metadata=False,
                       matlab_compatible=True)
 
 def set_kmeans_model(k, tsne_directory, trainingSetData, useGPU=-1):
@@ -665,11 +665,11 @@ def findEmbeddings(projections, trainingData, trainingEmbedding, parameters):
         outputStatistics.meanMax = meanMax
         outputStatistics.exitFlags = exitFlags
     elif parameters.method == 'UMAP':
-        umapfolder = parameters['projectPath'] + '/UMAP/'
+        modelsfolder = parameters['projectPath'] + '/Models/'
         print('\tLoading UMAP Model.')
-        with open(umapfolder + 'umap.model', 'rb') as f:
+        with open(modelsfolder + 'umap.model', 'rb') as f:
             um = pickle.load(f)
-        trainparams = np.load(umapfolder + '_trainMeanScale.npy', allow_pickle=True)
+        trainparams = np.load(modelsfolder + '_trainMeanScale.npy', allow_pickle=True)
         print('\tLoaded.')
         embed_negative_sample_rate = parameters['embed_negative_sample_rate']
         um.negative_sample_rate = embed_negative_sample_rate

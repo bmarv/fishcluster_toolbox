@@ -37,10 +37,10 @@ def umap_inference_for_individual(
         )
     data = data / np.sum(data, 1)[:, None]
 
-    umapfolder = parameters['projectPath'] + '/UMAP/'
+    modelsfolder = parameters['projectPath'] + '/Models/'
     um = umap_model
     trainparams = np.load(
-        umapfolder + '_trainMeanScale.npy',
+        modelsfolder + '_trainMeanScale.npy',
         allow_pickle=True
     )
     embed_negative_sample_rate = parameters['embed_negative_sample_rate']
