@@ -299,8 +299,6 @@ def createProjectDirectory(pathToProject):
     _dirs = [
         pathToProject,
         f'{pathToProject}/Projections',
-        f'{pathToProject}/TSNE_Projections',
-        f'{pathToProject}/TSNE',
         f'{pathToProject}/UMAP'
     ]
     for d in _dirs:

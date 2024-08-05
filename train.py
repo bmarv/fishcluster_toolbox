@@ -21,7 +21,6 @@ def run_training(n_neighbors, min_dist, data, threads_cpu):
     parameters.min_dist = min_dist
     parameters.projectPath = data
     init_wandb(parameters)
-    mmpy.createProjectDirectory(parameters.projectPath)
     print("Data Normalization")
     parameters.normalize_func = training_processing\
         .return_normalization_func(parameters)
