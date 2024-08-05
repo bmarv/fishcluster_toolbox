@@ -13,13 +13,14 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 
-def run_training(n_neighbors, min_dist, data, threads_cpu):
+def run_training(n_neighbors, min_dist, threads_cpu, data=None):
     # PRE-PROCESSING
     tall = time.time()
     parameters = training_processing.initialize_training_parameters()
     parameters.n_neighbors = n_neighbors
     parameters.min_dist = min_dist
-    parameters.projectPath = data
+    if data is not None:
+        parameters.projectPath = data
     init_wandb(parameters)
     print("Data Normalization")
     parameters.normalize_func = training_processing\
@@ -135,15 +136,15 @@ if __name__ == "__main__":
     )
     parser.add_argument("--n_neighbors", required=True, type=int, default=15)
     parser.add_argument("--min_dist", required=True, type=float, default=0.1)
-    parser.add_argument("--data", required=True, type=str, default='/mnt/')
     parser.add_argument("--threads_cpu", required=False, type=int, default=1)
+    parser.add_argument("--data", required=False, type=str, default='/mnt/')
     args = parser.parse_args()
 
     n_neighbors = args.n_neighbors
     min_dist = args.min_dist
-    data = args.data
     threads_cpu = args.threads_cpu
+    data = args.data
 
-    print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}, data: {data}, \
-        threads_cpu: {threads_cpu}')
-    run_training(n_neighbors, min_dist, data, threads_cpu)
+    print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}, threads_cpu: {threads_cpu},\
+           data: {data}')
+    run_training(n_neighbors, min_dist, threads_cpu, data)
