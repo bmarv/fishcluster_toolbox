@@ -136,8 +136,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("--n_neighbors", required=True, type=int, default=15)
     parser.add_argument("--min_dist", required=True, type=float, default=0.1)
-    parser.add_argument("--threads_cpu", required=False, type=int, default=1)
-    parser.add_argument("--data", required=False, type=str, default='/mnt/')
+    parser.add_argument("--threads_cpu", required=False, type=int, default=-1)
+    parser.add_argument("--data", required=False, type=str, default=None)
     args = parser.parse_args()
 
     n_neighbors = args.n_neighbors
