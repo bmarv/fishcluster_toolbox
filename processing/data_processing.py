@@ -49,7 +49,6 @@ def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
             data[1:-1, 1]
         )).T
     X = X[~f3]
-    # check if X is finite
     if not np.all(np.isfinite(X)):
         raise ValueError("Not all values in X are finite, \
             something went wrong in the feature computation", X)
@@ -84,7 +83,6 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
         batch_keys_remove=excluded_days.get(f"{BLOCK}_{fish_key}_{day}", [])
     )
     if len(data_in_batches) == 0:
-        # print(f"{fish_key} for day {day} is empty! ")
         return None, None
     daytime_DF = start_time_of_day_to_seconds(day.split("_")[1])\
         * FRAMES_PER_SECOND
@@ -114,7 +112,6 @@ def compute_and_write_projection(
     filename,
     recompute=False,
     excluded_days=dict(),
-    trimmed=False
 ):
     if not recompute and os.path.exists(filename):
         return None
@@ -126,39 +123,23 @@ def compute_and_write_projection(
     )
     if X is None:
         return None
-    # print(f"{fk} {day} {X.shape}")
     if X.shape[0] < 1000:
-        # print("Skip: number of datapoints too small")
         return None
-    if trimmed:
-        hdf5storage.write(
-            data={
-                'projections': X[:, 1:4],
-                'positions': X[:, 4:],
-                'df_time_index': X[:, 0],
-            },
-            path='/',
-            truncate_existing=True,
-            filename=filename,
-            store_python_metadata=False,
-            matlab_compatible=True
-        )
-    else:
-        hdf5storage.write(
-            data={
-                'projections': X[:, 1:4],
-                'positions': X[:, 4:],
-                'area': new_area,
-                'df_time_index': X[:, 0],
-                'day': day,
-                'fish_key': fk
-            },
-            path='/',
-            truncate_existing=True,
-            filename=filename,
-            store_python_metadata=False,
-            matlab_compatible=True
-        )
+    hdf5storage.write(
+        data={
+            'projections': X[:, 1:4],
+            'positions': X[:, 4:],
+            'area': new_area,
+            'df_time_index': X[:, 0],
+            'day': day,
+            'fish_key': fk
+        },
+        path='/',
+        truncate_existing=True,
+        filename=filename,
+        store_python_metadata=False,
+        matlab_compatible=True
+    )
     return None
 
 
@@ -167,7 +148,6 @@ def compute_all_projections(
     fish_keys=None,
     recompute=False,
     excluded_days=dict(),
-    trimmed=False
 ):
     area_f = get_area_functions()
     if fish_keys is None:
@@ -179,30 +159,17 @@ def compute_all_projections(
             camera=fk.split("_")[0],
             is_back=fk.split("_")[1] == BACK
         )
-        if trimmed:
-            trimmed_directory = projectPath + '/Projections_trimmed'
-            if not os.path.exists(trimmed_directory):
-                os.makedirs(trimmed_directory, exist_ok=True)
-                # print('trimmed projections directory created')
-            _ = pool.starmap(compute_and_write_projection, [(
-                    fk, day, (fk, area_f(fk)),
-                    projectPath + f'/Projections_trimmed/{BLOCK}_{fk}_{day}\
-                        _pcaModes.mat',
-                    recompute, excluded_days, trimmed
-                ) for day in days]
-            )
-        else:
-            _ = pool.starmap(compute_and_write_projection, [(
-                fk, day, (fk, area_f(fk)),
-                projectPath + f'/Projections/{BLOCK}_{fk}_{day}_pcaModes.mat',
-                recompute, excluded_days) for day in days]
-            )
+        _ = pool.starmap(compute_and_write_projection, [(
+            fk, day, (fk, area_f(fk)),
+            projectPath + f'/Projections/{BLOCK}_{fk}_{day}_pcaModes.mat',
+            recompute, excluded_days) for day in days]
+        )
         pool.close()
         pool.join()
 
 
-def compute_all_projections_filtered(parameters, trimmed=False):
-    fish_keys = get_camera_pos_keys()  # get all fish keys
+def compute_all_projections_filtered(parameters):
+    fish_keys = get_camera_pos_keys()
     for key in block1_remove:
         if BLOCK in key:
             fk = "_".join(key.split("_")[1:])
@@ -216,7 +183,6 @@ def compute_all_projections_filtered(parameters, trimmed=False):
         fish_keys,
         excluded_days=excluded,
         recompute=True,
-        trimmed=trimmed
     )
 
 
@@ -237,10 +203,10 @@ if __name__ == "__main__":
     os.environ['BLOCK'] = 'block1'
     print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
-    compute_all_projections_filtered(parameters, trimmed=False)
+    compute_all_projections_filtered(parameters)
 
     BLOCK = 'block2'
     os.environ['BLOCK'] = 'block2'
     print("Start computation for: ", os.environ['BLOCK'])
     parameters = set_parameters()
-    compute_all_projections_filtered(parameters, trimmed=False)
+    compute_all_projections_filtered(parameters)
