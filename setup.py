@@ -5,7 +5,7 @@ import os
 import shutil
 
 env = "config.env"
-env_default = "scripts/env.default.sh"
+env_default = "config.env.default"
 
 if not os.path.exists(env):
     shutil.copyfile(env_default, env)
