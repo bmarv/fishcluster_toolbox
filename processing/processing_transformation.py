@@ -1,7 +1,7 @@
 import numpy as np
 from utils.tank_area_config import get_area_functions, \
     get_calibration_functions
-import config_processing as config
+import config
 
 FUNCS_PX2CM = None
 AREA_FUNCS = None

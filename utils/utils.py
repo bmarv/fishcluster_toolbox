@@ -5,7 +5,7 @@ import numpy as np
 import bisect
 from easydict import EasyDict as edict
 from umap import UMAP
-from config import projectPath
+from config import PROJ_PATH
 
 
 def pointsInCircum(r, n=100):
@@ -323,7 +323,7 @@ def set_parameters(parameters=None):
     parameters.method = "UMAP"
     parameters.kmeans = 10
     parameters.kmeans_list = [5, 7, 10, 20, 50, 100]
-    parameters.projectPath = projectPath
+    parameters.projectPath = PROJ_PATH
     os.makedirs(parameters.projectPath, exist_ok=True)
     createProjectDirectory(parameters.projectPath)
     return parameters

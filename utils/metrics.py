@@ -1,5 +1,5 @@
 import numpy as np
-import config_processing as config
+import config
 
 
 def get_spikes_filter(steps):

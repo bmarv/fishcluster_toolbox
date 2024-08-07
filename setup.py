@@ -4,7 +4,7 @@ import numpy
 import os
 import shutil
 
-env = "config_processing.env"
+env = "config.env"
 env_default = "scripts/env.default.sh"
 
 if not os.path.exists(env):
