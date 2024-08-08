@@ -95,7 +95,11 @@ on the inverse of that density space.
 For some of these processes, we utilize the [motionmapperpy](https://github.com/bermanlabemory/motionmapperpy) implementation based on the work by Berman et al. [[3]](#3-berman-gordon-j-et-al-mapping-the-stereotyped-behaviour-of-freely-moving-fruit-flies-journal-of-the-royal-society-interface-1199-2014-20140672).
 
 ## Downstream Analyses
-
+After training and obtaining the cluster-regions for both K-Means and UMAP, it is possible to compute the Coefficient of Variation (CoV) for the three original features and Entropy for the cluster-regions as a measure for changes in the Plasticity of an Individual. 
+Obtaining the data and creating the tables for further analyses on the values for CoV and Entropy can be done by running the [downstream_analyses module](./downstream_analyses/) with the following command, for this to function, a Metadata-file has to be located at the directory of the original dataset:
+```bash
+python -m downstream_analyses
+```
 
 ---
 ## References:
