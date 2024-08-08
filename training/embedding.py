@@ -54,7 +54,7 @@ def run_UMAP(data, parameters, save_model=True):
     return y, um
 
 
-def run_kmeans(k, tsne_directory, trainingSetData):
+def run_kmeans(k, models_directory, trainingSetData):
     """
     Runs the K-means clustering algorithm on the training set data.
     Based on motionmapperpy.
@@ -73,6 +73,6 @@ def run_kmeans(k, tsne_directory, trainingSetData):
     ).fit(trainingSetData)
     pickle.dump(
         kmeans,
-        open(tsne_directory + f"/kmeans_{k}.pkl", "wb")
+        open(models_directory + f"/kmeans_{k}.pkl", "wb")
     )
     return kmeans

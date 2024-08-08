@@ -9,8 +9,6 @@ import motionmapperpy as mmpy
 
 def umap_inference_for_individual(
     projections,
-    trainingData,
-    trainingEmbedding,
     parameters,
     projectionFile,
     umap_model
@@ -27,7 +25,6 @@ def umap_inference_for_individual(
     :param parameters: motionmapperpy Parameters dictionary.
     """
     numModes = parameters.pcaModes
-
     if parameters.waveletDecomp:
         # Finding Wavelets
         data, f = mmpy.motionmapper.mm_findWavelets(
@@ -36,15 +33,13 @@ def umap_inference_for_individual(
             parameters
         )
     data = data / np.sum(data, 1)[:, None]
-
     modelsfolder = parameters['projectPath'] + '/Models/'
     um = umap_model
     trainparams = np.load(
         modelsfolder + '_trainMeanScale.npy',
         allow_pickle=True
     )
-    embed_negative_sample_rate = parameters['embed_negative_sample_rate']
-    um.negative_sample_rate = embed_negative_sample_rate
+    um.negative_sample_rate = parameters['embed_negative_sample_rate']
     zValues = um.transform(data)
     gc.collect()
     zValues = zValues - trainparams[0]
@@ -96,17 +91,6 @@ def kmeans_inference_for_individual(
             numModes,
             parameters
         )
-
-    def kmeans(k):
-        return pickle.load(
-            open(
-                parameters.projectPath
-                + "/"
-                + parameters.method
-                + f"/kmeans_{k}.pkl", "rb"
-                )
-            )
-
     clusters_dict = {}
     for idx, k in enumerate(parameters.kmeans_list):
         clusters_dict[f"clusters_{k}"] = kmeans_models[idx].predict(data)

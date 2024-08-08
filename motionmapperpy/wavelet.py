@@ -40,9 +40,9 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
         # print('\t Using GPU #%i'%useGPU)
     else:
         import numpy as np
-        import multiprocessing as mp
-        if numProcessors<0:
-            numProcessors = mp.cpu_count()
+        # import multiprocessing as mp
+        # if numProcessors<0:
+        #     numProcessors = mp.cpu_count()
         # print('\t Using #%i CPUs.' % numProcessors)
 
     projections = np.array(projections)
