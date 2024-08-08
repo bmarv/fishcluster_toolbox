@@ -1,7 +1,6 @@
 import argparse
 import hdf5storage
 import glob
-import time
 import os
 import motionmapperpy as mmpy
 from training import training_processing
@@ -70,7 +69,9 @@ def run_training(n_neighbors, min_dist, threads_cpu, data=None):
 
     print('Inferencing using KMeans')
     for proj_file in tqdm(projectionFiles):
-        if os.path.exists(proj_file[:-4] + f'_clusters_{parameters.kmeans_list[-1]}.mat'):
+        if os.path.exists(
+            proj_file[:-4] + f'_clusters_{parameters.kmeans_list[-1]}.mat'
+        ):
             continue
 
         projections = hdf5storage.loadmat(proj_file)['projections']
@@ -120,7 +121,7 @@ def inferencing_umap_f_batch(
             continue
 
         projections = hdf5storage.loadmat(proj_file)['projections']
-        
+
         inferencing.umap_inference_for_individual(
             projections,
             parameters,
@@ -144,6 +145,8 @@ if __name__ == "__main__":
     threads_cpu = args.threads_cpu
     data = args.data
 
-    print(f'n_neighbors: {n_neighbors}, min_dist: {min_dist}, threads_cpu: {threads_cpu},\
-           data: {data}')
+    print(
+        f'n_neighbors: {n_neighbors}, min_dist: {min_dist},'
+        f'threads_cpu: {threads_cpu}, data: {data}'
+    )
     run_training(n_neighbors, min_dist, threads_cpu, data)
