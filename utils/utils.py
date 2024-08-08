@@ -299,9 +299,7 @@ def createProjectDirectory(pathToProject):
     _dirs = [
         pathToProject,
         f'{pathToProject}/Projections',
-        f'{pathToProject}/TSNE_Projections',
-        f'{pathToProject}/TSNE',
-        f'{pathToProject}/UMAP'
+        f'{pathToProject}/Models'
     ]
     for d in _dirs:
         if not os.path.exists(d):
@@ -319,7 +317,7 @@ def set_parameters(parameters=None):
     parameters.maxF = 2.5
     parameters.minF = 0.01
     parameters.omega0 = 5
-    parameters.numProcessors = 10
+    parameters.numProcessors = 1
     parameters.method = "UMAP"
     parameters.kmeans = 10
     parameters.kmeans_list = [5, 7, 10, 20, 50, 100]

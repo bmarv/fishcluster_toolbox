@@ -11,3 +11,4 @@ scikit-image==0.20.0
 scipy==1.8.0
 tqdm==4.65.0
 umap-learn==0.5.3
+wandb==0.17.5

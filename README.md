@@ -56,7 +56,7 @@ To run the training, please run the following command and specify the informatio
 python train.py --data  "/path/to/your/dataset" --n_neighbors xx --min_dist x.x --threads_cpu xx
 ```
 
-After training, the embedding-models are stored in the `./UMAP/` directory of the dataset and the inferenced individuals alongside their original data in the `./Projections/` directory.
+After training, the embedding-models are stored in the `./Models/` directory of the dataset and the inferenced individuals alongside their original data in the `./Projections/` directory.
 
 ## Structure
 ### Dataset

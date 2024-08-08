@@ -176,3 +176,5 @@ misc/.ignore/
 # debugging
 .vscode/
 notebooks/
+
+wandb/
