@@ -234,10 +234,11 @@ def load_trajectory_data(parameters, fk="", day=""):
 
 
 if __name__ == "__main__":
-    for block in range(config.N_BLOCKS):
-        exec(f"config.BLOCK = config.BLOCK{block + 1}")
-        exec(f"os.environ['BLOCK'] = config.BLOCK{block + 1}")
-        config.DIR_CSV_LOCAL =  f"{config.PROJ_PATH}/FE_tracks_060000_{config.BLOCK}"
+    for block_nr in range(1, config.N_BLOCKS+1):
+        exec(f"config.BLOCK = config.BLOCK{block_nr}")
+        exec(f"os.environ['BLOCK'] = config.BLOCK{block_nr}")
+        config.DIR_CSV_LOCAL = f"{config.PROJ_PATH}/FE_tracks_060000_"\
+            f"{config.BLOCK}"
         config.err_file = f"{config.DIR_CSV_LOCAL}/results/log_error.csv"
         config.area_back = f"{config.DIR_CSV_LOCAL}/area_config/areas_back"
         config.area_front = f"{config.DIR_CSV_LOCAL}/area_config/areas_front"
