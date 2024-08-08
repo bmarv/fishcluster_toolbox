@@ -4,7 +4,7 @@ import shutil
 
 config_path = os.path.dirname(os.path.realpath(__file__))
 if not os.path.exists(f"{config_path}/config.env"):
-    shutil.copyfile(f"{config_path}/scripts/config.env.default", "config.env")
+    shutil.copyfile(f"{config_path}/misc/config.env.default", "config.env")
 
 load_envbash(f"{config_path}/config.env")
 PROJ_PATH = os.environ["PROJ_PATH"]
