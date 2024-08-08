@@ -24,16 +24,21 @@ After a successful installation, it is required to compile Cython-Code for your 
 ```bash
 python setup.py build_ext --inplace
 ```
+
+## Configuration
+Running the setup.py will create a `config.env` file inside the project. Please configure the path to your dataset:
+```python
+PROJ_PATH="/path/to/your/dataset"
+```
+
 ## Getting Started
 ### Data Preprocessing
 The input data originates from experiments tracked with high-resolution camera systems and afterwards processed with computer vision models for object detection by the [Biotracker software](https://www.igb-berlin.de/en/biotracker) [[4]](#4-mönck-hauke-jürgen-et-al-biotracker-an-open-source-computer-vision-framework-for-visual-animal-tracking-arxiv-preprint-arxiv180307985-2018). \
 Our workflow consists of preprocessing the data to do data-filtering and feature computations as well as to match our datastructure. \
-For this, please specify the required information in the [config_processing.env](./config_processing.env) file. Environment variables that need to be specified are the following:
+For this, please specify additional required information in the `config.env` file. Environment variables that need to be specified are the following:
 ```python
 N_BATCHES=15
-path_csv_local="/path/to/your/dataset"
-POSITION_STR_FRONT="string_for_the_front_directory"
-POSITION_STR_BACK="string_for_the_back_directory"
+N_BLOCKS=2
 ```
 For running the preprocessing, please run the following python-module:
 ```bash
@@ -45,14 +50,6 @@ The preprocessed dataset is published under [the following link] [[5]](#5-todo-i
 
 ### Training
 For obtaining behavioural clusters, we rely on using unsupervised machine learning paradigms on the underlying dataset. Given the data, we perform embedding on the whole dataset using Uniform Manifold Approximation (UMAP) [[6]](#6-mcinnes-leland-john-healy-and-james-melville-umap-uniform-manifold-approximation-and-projection-for-dimension-reduction-arxiv-preprint-arxiv180203426-2018) and K-Means [[7]](#7-kanungo-tapas-et-al-an-efficient-k-means-clustering-algorithm-analysis-and-implementation-ieee-transactions-on-pattern-analysis-and-machine-intelligence-247-2002-881-892) as well as inferencing on all the individuals. Afterwards, using Watershed-Segmentation [[9]](#9-f-meyer-topographic-distance-and-watershed-lines-signal-processing-38-113125-1994) we can obtain behavioural clusters for further downstream analyses.
-
-For training purposes, please specify the following information in the [config.env](./config.env) file:
-```python
-projectPath="/path/to/your/dataset"
-BLOCK1="block1"
-BLOCK2="block2"
-BLOCK=BLOCK1
-```
 
 To run the training, please run the following command and specify the information:
 ```bash
