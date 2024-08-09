@@ -25,7 +25,7 @@ from utils.utils import (
     split_into_batches,
 )
 
-DIR_PLASTCITY = "plasticity"
+DIR_PLASTICITY = "plasticity"
 
 
 def day2date(d):
@@ -208,7 +208,7 @@ def compute_cluster_entropy(
                     dist = compute_cluster_distribution(clusters, n_clusters)
                     entro[i, j] = entropy_m(dist)
 
-    dir_p = f"{parameters.projectPath}/{DIR_PLASTCITY}/{name}"
+    dir_p = f"{parameters.projectPath}/{DIR_PLASTICITY}/{name}"
     os.makedirs(dir_p, exist_ok=True)
     all_vals_df = pd.DataFrame(entro, columns=fish_keys, index=index)
     if not by_the_hour:
@@ -308,7 +308,7 @@ def compute_coefficient_of_variation(
                     )
                     cv = data_means.std() / data_means.mean()
                     sum_data[i][di, j] = cv
-    filename = f"{parameters.projectPath}/{DIR_PLASTCITY}/cv"
+    filename = f"{parameters.projectPath}/{DIR_PLASTICITY}/cv"
     os.makedirs(filename, exist_ok=True)
     time_str = "hourly" if by_the_hour else "daily"
     for i in range(3):
@@ -357,7 +357,7 @@ def for_all_cluster_entropy(parameters, fish_ids, cluster_sizes_list):
         parameters.kmeans = k
         wshedfile = hdf5storage.loadmat(
             "%s/%s/zVals_wShed_groups_%s.mat"
-            % (parameters.projectPath, parameters.method, parameters.kmeans)
+            % (parameters.projectPath, 'Models', parameters.kmeans)
         )
         get_clusters_func_wshed = lambda fk, d: get_regions_for_fish_key(
             wshedfile, fk, d

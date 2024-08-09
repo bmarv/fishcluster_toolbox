@@ -449,8 +449,8 @@ def unifiy_table_timesteps(
     reordered_df_list = []
     for key in table_id_dict.keys():
         reordered_df_element = reorder_entropy_and_rest_data_by_key(
-            input_df, 
-            key, 
+            input_df,
+            key,
             cluster_sizes,
             clustering_methods
         )
