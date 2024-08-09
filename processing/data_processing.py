@@ -42,13 +42,13 @@ def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
     wall = px2cm(distance_to_wall_chunk(data, new_area))
     f3 = update_filter_three_points(steps, filter_index)
     X = np.array((
-            frame_idx[1:-1],
-            steps[1:],
-            t_a,
-            wall[1:-1],
-            data[1:-1, 0],
-            data[1:-1, 1]
-        )).T
+        frame_idx[1:-1],
+        steps[1:],
+        t_a,
+        wall[1:-1],
+        data[1:-1, 0],
+        data[1:-1, 1]
+    )).T
     X = X[~f3]
     if not np.all(np.isfinite(X)):
         raise ValueError("Not all values in X are finite, \
@@ -90,7 +90,7 @@ def compute_projections(fish_key, day, area_tuple, excluded_days=dict()):
     daytime_DF = start_time_of_day_to_seconds(day.split("_")[1])\
         * config.FRAMES_PER_SECOND
     for k, df in zip(keys, data_in_batches):
-        df.index = df.FRAME+(int(k)*config.BATCH_SIZE)+daytime_DF
+        df.index = df.FRAME + (int(k)*config.BATCH_SIZE) + daytime_DF
     data = pd.concat(data_in_batches)
     data_px = data[["xpx", "ypx"]].to_numpy()
     filter_index = all_error_filters(
@@ -155,7 +155,7 @@ def compute_all_projections(
     area_f = get_area_functions()
     if fish_keys is None:
         fish_keys = get_camera_pos_keys()
-    numProcessors = mp.cpu_count()
+    numProcessors = mp.cpu_count() - 1
     for i, fk in tqdm(enumerate(fish_keys), total=len(fish_keys)):
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
@@ -193,7 +193,7 @@ def compute_all_projections_filtered(parameters):
 def load_trajectory_data(parameters, fk="", day=""):
     data_by_day = []
     pfile = glob.glob(
-        parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat'
+        parameters.projectPath + f'/Projections/{fk}*_{day}*_pcaModes.mat'
     )
     pfile.sort()
     for f in tqdm(pfile):
@@ -203,7 +203,7 @@ def load_trajectory_data(parameters, fk="", day=""):
 
 
 if __name__ == "__main__":
-    for block_nr in range(1, config.N_BLOCKS+1):
+    for block_nr in range(1, config.N_BLOCKS + 1):
         exec(f"config.BLOCK = config.BLOCK{block_nr}")
         exec(f"os.environ['BLOCK'] = config.BLOCK{block_nr}")
         config.DIR_CSV_LOCAL = f"{config.PROJ_PATH}/FE_tracks_060000_"\

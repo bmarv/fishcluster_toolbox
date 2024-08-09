@@ -130,7 +130,6 @@ ENV/
 env.bak/
 venv.bak/
 # specific environments
-# TODO: needs to be completely removed and agnostically creatable
 *.env
 
 
