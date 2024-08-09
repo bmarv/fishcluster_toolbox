@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import hdf5storage
 import sys
 from tqdm import tqdm
-from config import BLOCK1, BLOCK2, HOURS_PER_DAY
+from config import HOURS_PER_DAY
 from utils.analyses_helper import (
     remove_spines,
     get_regions_for_fish_key,
@@ -268,7 +268,7 @@ def compute_coefficient_of_variation(
     axes = fig.subplots(3, 1)
     fig.suptitle("Coefficient of Variation for %0.1f sec data" % (n_df / 5))
     names = ["step length", "turning angle", "distance to wall"]
-    days = get_days(parameters, prefix=BLOCK1)
+    days = get_days(parameters, prefix="block1")
     size = len(days) * (HOURS_PER_DAY) if by_the_hour else len(days)
     sum_data = [np.full((size, len(fish_keys)), np.nan) for i in range(3)]
     for j, fk in enumerate(fish_keys):
@@ -321,11 +321,11 @@ def compute_coefficient_of_variation(
             df = df.join(
                 pd.DataFrame(
                     {
-                        f"date_{BLOCK1}": map(
-                            day2date, get_days(parameters, prefix=BLOCK1)
+                        f"date_block1": map(
+                            day2date, get_days(parameters, prefix="block1")
                         ),
-                        f"date_{BLOCK2}": map(
-                            day2date, get_days(parameters, prefix=BLOCK2)
+                        f"date_block2": map(
+                            day2date, get_days(parameters, prefix="block2")
                         ),
                     },
                     index=df.index,
@@ -363,11 +363,15 @@ def for_all_cluster_entropy(parameters, fish_ids, cluster_sizes_list):
             wshedfile, fk, d
         )
         for flag in [True, False]:
+            if flag:
+                print('\tCalculating Entropy by the Hour')
+            else:
+                print('\tCalculating Entropy by the Day')
             for func, c_type in zip(
                 [get_clusters_func_wshed, get_clusters_func],
                 ["wshed", "kmeans"]
             ):
-                print(f"\tcluster_method: {c_type}")
+                print(f"\t\tcluster_method: {c_type}")
                 compute_cluster_entropy(
                     parameters,
                     func,

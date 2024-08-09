@@ -1,19 +1,19 @@
 import glob
-from .plasticity import (
+from downstream_analyses.plasticity import (
     set_parameters,
     get_individuals_keys,
     for_all_cluster_entropy,
     compute_coefficient_of_variation,
     plasticity_for_file
 )
-from .cov_entropy_tables import unified_table_flow
+from downstream_analyses.cov_entropy_tables import unified_table_flow
 
 
 if __name__ == "__main__":
     parameters = set_parameters()
     fks = get_individuals_keys(parameters)
     cluster_sizes_list = parameters.kmeans_list
-    print('---CALCULATING ENTROPY AND COEFFIECIENT OF VARIATION---')
+    print('---CALCULATING ENTROPY AND COEFFICIENT OF VARIATION---')
     for_all_cluster_entropy(parameters, fks, cluster_sizes_list)
     for flag in [True, False]:
         compute_coefficient_of_variation(

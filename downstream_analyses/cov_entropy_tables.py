@@ -1,4 +1,3 @@
-import os
 import re
 import numpy as np
 import pandas as pd
@@ -345,44 +344,50 @@ def extract_features_from_metadata_table(
 
 
 def extract_and_store_relevant_dates(
-    raw_data_path: str
+    projections_data_path: str
 ) -> dict:
-    # nested hierarchy: block, compartment, cam_serial, dates
-    # block_dir_list = ['FE_tracks_060000_block1', 'FE_tracks_060000_block2']
-    # compartment_dir_list = [
-    #   'FE_block*_060000_front_final', 'FE_block*_060000_back_final'
-    # ]
+    compartment_pattern = r'(front|back)'
+    id_pattern = r'_(\d{8})'
+    date_pattern = r'_(\d{8})_\d{6}_pcaModes(.)*$'
 
     date_dict = {}
-    for block in ['1', '2']:
-        block_id = f'FE_tracks_060000_block{block}'
+    for block_nr in ['1', '2']:
+        # get filtered block_nr list
+        block_els = sorted(
+            glob.glob(f'{projections_data_path}/Projections/block{block_nr}*')
+        )
         compartment_dict = {}
         for compartment in ['front', 'back']:
-            compartment_id = f'FE_block*_060000_{compartment}_final'
-            serials_block1_comp_back = list(
-                glob.glob(f'{raw_data_path}/{block_id}/{compartment_id}/*')
-            )
-            serials_block1_comp_back.sort()
-            serials_dates_dict = {}
-            for id in serials_block1_comp_back:
-                id_base_name = os.path.basename(id)
-                dates_list = []
-                dates_paths = glob.glob(f'{id}/*')
-                dates_paths.sort()
-                pattern = r'^(?!.*no_fish).*?(\d{8})_\d{6}\.\d+'
+            compartment_list = []
+            for block_el in block_els:
+                # get filtered compartment list
+                if ((re.search(compartment_pattern, block_el)).group() == compartment):
+                    compartment_list.append(block_el)
+            id_list = []
+            for comp_el in compartment_list:
+                curr_id = (re.search(id_pattern, comp_el)).group(1)
+                # get all individual names
+                if curr_id not in id_list:
+                    id_list.append(curr_id)
+                
+            curr_id_dict = {}
+            for curr_ind in id_list:
+                # get filtered individual list
+                individual_list = []
+                for comp_el2 in compartment_list:
+                    if (re.search(id_pattern, comp_el2)).group(1) == curr_ind:
+                        individual_list.append(comp_el2)
+                date_list = []
+                for date_el_p_ind in individual_list:
+                    curr_date = (
+                        re.search(date_pattern, date_el_p_ind)
+                    ).group(1)
+                    if curr_date not in date_list:
+                        date_list.append(curr_date)
 
-                for date_element in dates_paths:
-                    string = os.path.basename(date_element)
-                    match = re.match(pattern, string)
-                    if match:
-                        date = match.group(1)
-                        dates_list.append(date)
-                    else:
-                        dates_list.append('nan')
-
-                serials_dates_dict[id_base_name] = dates_list
-            compartment_dict[compartment] = serials_dates_dict
-        date_dict[block] = compartment_dict
+                curr_id_dict[curr_ind] = date_list
+            compartment_dict[compartment] = curr_id_dict
+        date_dict[block_nr] = compartment_dict
     return date_dict
 
 
@@ -482,13 +487,13 @@ def unifiy_table_timesteps(
 
 def apply_metadata_to_cov_entropy_table_flow(
     cov_entropy_df,
-    raw_data_path,
+    projections_data_path,
     metadata_df,
     time_constraint,
     output_file_name=None
 ):
     date_dict = extract_and_store_relevant_dates(
-        raw_data_path=raw_data_path
+        projections_data_path=projections_data_path
     )
     table_id_dict = extract_features_from_metadata_table(
         date_dict=date_dict,
@@ -538,8 +543,8 @@ def unified_table_flow(
     cov_accuracies=["050"],
     cluster_sizes=["005", "007", "010", "020", "050"],
     clustering_methods=["kmeans", "umap"],
-    raw_data_path="FE_tracks_060000_final_06July2022",
-    metadata_path="FE_Metadata_for_Entropy_models.xlsx",
+    projections_data_path="/mnt/Projections",
+    metadata_path="/mnt/FE_Metadata_for_Entropy_models.xlsx",
     discard_nan_rows=False,
     output_file_name=None,
 ):
@@ -557,7 +562,7 @@ def unified_table_flow(
     metadata_df = pd.read_excel(metadata_path)
     merged_df, table_id_dict = apply_metadata_to_cov_entropy_table_flow(
         cov_entropy_df,
-        raw_data_path,
+        projections_data_path,
         metadata_df,
         time_constraint,
         output_file_name=None,
@@ -578,7 +583,7 @@ if __name__ == "__main__":
     parameters = set_parameters()
     fks = get_individuals_keys(parameters)
     parameters = set_parameters()
-    raw_data_path = parameters.projectPath
+    projections_data_path = parameters.projectPath
     cluster_sizes_list = parameters.kmeans_list
     cluster_sizes_str_list = [str(num).zfill(3) for num in cluster_sizes_list]
     metadata_path = parameters.projectPath + \
@@ -594,7 +599,7 @@ if __name__ == "__main__":
             time_constraint=time_str,
             cluster_sizes=cluster_sizes_str_list,
             clustering_methods=['kmeans', 'umap'],
-            raw_data_path=raw_data_path,
+            projections_data_path=projections_data_path,
             metadata_path=metadata_path,
             discard_nan_rows=True,
             output_file_name=output_file_name
