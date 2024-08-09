@@ -146,7 +146,7 @@ def returnTemplates(yData, signalData, minTemplateLength=10, kdNeighbors=10):
     return templates, xx, density, sigma, lengths, L, vals2
 
 
-def findTemplatesFromData(signalData, yData, signalAmps, numPerDataSet, parameters,projectionFile):
+def findTemplatesFromData(signalData, yData, signalAmps, numPerDataSet, parameters, projectionFile):
     kdNeighbors = parameters.kdNeighbors
     minTemplateLength = parameters.minTemplateLength
 
@@ -159,7 +159,7 @@ def findTemplatesFromData(signalData, yData, signalAmps, numPerDataSet, paramete
     fig, ax = plt.subplots()
     ax.imshow(density, origin='lower', cmap=gencmap())
     ax.scatter(wbounds[0], wbounds[1], color='k', s=0.1)
-    fig.savefig(projectionFile[:-4]+'_trainingtSNE.png')
+    fig.savefig(projectionFile[:-4]+f'_training_{parameters.method}.png')
     plt.close()
     ####################################################
 

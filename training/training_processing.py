@@ -13,7 +13,7 @@ import motionmapperpy as mmpy
 def load_trajectory_data(parameters, fk="", day=""):
     data_by_day = []
     pfile = glob.glob(
-        parameters.projectPath+f'/Projections/{fk}*_{day}*_pcaModes.mat'
+        parameters.projectPath + f'/Projections/{fk}*_{day}*_pcaModes.mat'
     )
     pfile.sort()
     for f in tqdm(pfile):
@@ -64,7 +64,7 @@ def return_normalization_func(parameters):
         [d["projections"] for d in load_trajectory_data(parameters)]
     )
     std = data.std(axis=0)
-    return lambda pro: pro/std
+    return lambda pro: pro / std
 
 
 def subsample_from_projections(parameters):
@@ -78,10 +78,10 @@ def subsample_from_projections(parameters):
         tuple: A tuple containing the subsampled
         training data and training amplitudes.
     """
-    projection_directory = parameters.projectPath+'/Projections/'
+    projection_directory = parameters.projectPath + '/Projections/'
     model_directory = parameters.projectPath + '/Models/'
 
-    if not os.path.exists(model_directory+'training_data.mat'):
+    if not os.path.exists(model_directory + 'training_data.mat'):
         trainingSetData, trainingSetAmps, _ = mmpy.runEmbeddingSubSampling(
             projection_directory,
             parameters
@@ -96,7 +96,7 @@ def subsample_from_projections(parameters):
             data={'trainingSetData': trainingSetData},
             path='/',
             truncate_existing=True,
-            filename=model_directory+'/training_data.mat',
+            filename=model_directory + '/training_data.mat',
             store_python_metadata=False,
             matlab_compatible=True
         )

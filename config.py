@@ -43,3 +43,11 @@ area_front = f"{DIR_CSV_LOCAL}/area_config/areas_front"
 CALIBRATION_DIST_CM = float(os.environ["CALIBRATION_DIST_CM"])
 DEFAULT_CALIBRATION = float(os.environ["DEFAULT_CALIBRATION"])
 err_file = f"{DIR_CSV_LOCAL}/results/log_error.csv"
+
+# Training vars
+n_neighbors = int(os.environ.get("N_NEIGHBORS"))
+min_dist = float(os.environ.get("MIN_DIST"))
+threads_cpu = int(os.environ.get("THREADS_CPU"))
+
+# Weights-and-biases resource tracking
+wandb_key = os.environ.get("WANDB_API_KEY")

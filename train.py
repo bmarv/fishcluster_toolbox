@@ -12,14 +12,10 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 
-def run_training(n_neighbors, min_dist, threads_cpu, data=None):
+def run_training(parameters):
     # PRE-PROCESSING
-    parameters = training_processing.initialize_training_parameters()
-    parameters.n_neighbors = n_neighbors
-    parameters.min_dist = min_dist
-    if data is not None:
-        parameters.projectPath = data
-    init_wandb(parameters)
+    if parameters.wandb_key:
+        init_wandb(parameters)
     print("Data Normalization")
     parameters.normalize_func = training_processing\
         .return_normalization_func(parameters)
@@ -47,6 +43,7 @@ def run_training(n_neighbors, min_dist, threads_cpu, data=None):
     projectionFiles = glob.glob(
         parameters.projectPath + '/Projections/*pcaModes.mat'
     )
+    threads_cpu = parameters.threads_cpu
     if threads_cpu == -1:
         threads_cpu = mp.cpu_count() - 1  # all cores, if not specified
     elif threads_cpu == 0:
@@ -95,12 +92,13 @@ def run_training(n_neighbors, min_dist, threads_cpu, data=None):
             saveplot=True,
             endident='*_pcaModes.mat'
         )
-    wandb.finish()
+    if parameters.wandb_key:
+        wandb.finish()
 
 
 def init_wandb(params):
     wandb.init(
-        project="pe_training",
+        project="fishcluster_toolbox",
         config=params
     )
 
@@ -134,19 +132,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="embedding and inferencing using umap and kmeans"
     )
-    parser.add_argument("--n_neighbors", required=True, type=int, default=15)
-    parser.add_argument("--min_dist", required=True, type=float, default=0.1)
-    parser.add_argument("--threads_cpu", required=False, type=int, default=-1)
-    parser.add_argument("--data", required=False, type=str, default=None)
+    parser.add_argument("--n_neighbors", required=False, type=int)
+    parser.add_argument("--min_dist", required=False, type=float)
+    parser.add_argument("--threads_cpu", required=False, type=int)
+    parser.add_argument("--data", required=False, type=str)
     args = parser.parse_args()
 
-    n_neighbors = args.n_neighbors
-    min_dist = args.min_dist
-    threads_cpu = args.threads_cpu
-    data = args.data
+    parameters = training_processing.initialize_training_parameters()
+    if args.n_neighbors is not None:
+        parameters.n_neighbors = args.n_neighbors
+    if args.min_dist is not None:
+        parameters.min_dist = args.min_dist
+    if args.threads_cpu is not None:
+        parameters.threads_cpu = args.threads_cpu
+    if args.data is not None:
+        parameters.projectPath = args.data
 
-    print(
-        f'n_neighbors: {n_neighbors}, min_dist: {min_dist},'
-        f'threads_cpu: {threads_cpu}, data: {data}'
-    )
-    run_training(n_neighbors, min_dist, threads_cpu, data)
+    print(f'''
+        n_neighbors: {parameters.n_neighbors}
+        min_dist: {parameters.min_dist}
+        threads_cpu: {parameters.threads_cpu}
+        data: {parameters.projectPath}
+    ''')
+    run_training(parameters)
