@@ -44,10 +44,6 @@ def run_training(parameters):
         parameters.projectPath + '/Projections/*pcaModes.mat'
     )
     threads_cpu = parameters.threads_cpu
-    if threads_cpu == -1:
-        threads_cpu = mp.cpu_count() - 1  # all cores, if not specified
-    elif threads_cpu == 0:
-        threads_cpu = 1
     print(f'using {threads_cpu} cpus')
 
     inferencing_batches = [
@@ -147,6 +143,11 @@ if __name__ == "__main__":
         parameters.threads_cpu = args.threads_cpu
     if args.data is not None:
         parameters.projectPath = args.data
+
+    if parameters.threads_cpu == -1:
+        parameters.threads_cpu = mp.cpu_count()  # all cores
+    elif parameters.threads_cpu == 0:
+        parameters.threads_cpu = 1
 
     print(f'''
         n_neighbors: {parameters.n_neighbors}

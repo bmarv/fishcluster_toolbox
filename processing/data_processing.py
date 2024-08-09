@@ -155,7 +155,7 @@ def compute_all_projections(
     area_f = get_area_functions()
     if fish_keys is None:
         fish_keys = get_camera_pos_keys()
-    numProcessors = mp.cpu_count() - 1
+    numProcessors = mp.cpu_count()  # using all cores
     for i, fk in tqdm(enumerate(fish_keys), total=len(fish_keys)):
         pool = mp.Pool(numProcessors)
         days = get_days_in_order(
