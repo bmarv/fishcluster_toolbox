@@ -14,6 +14,8 @@ RUN apt install nano less build-essential -y
 
 # resetting the Threading layer to tbb to prevent unsafe fork() calls in OpenMP using umap
 # -> https://stackoverflow.com/questions/68131348/training-a-python-umap-model-hangs-in-a-multiprocessing-process
+# -> https://github.com/numba/numba/issues/7148 
+# -> https://github.com/numba/numba/issues/6108#issuecomment-675365997 
 RUN export LD_LIBRARY_PATH=/opt/conda/envs/fishcluster_toolbox/lib/libtbb.so 
 
 COPY . /workspace
