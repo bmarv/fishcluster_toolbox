@@ -1,6 +1,7 @@
 import argparse
 import hdf5storage
 import glob
+import time
 import os
 import motionmapperpy as mmpy
 from training import training_processing
@@ -9,13 +10,21 @@ from training import inferencing
 from tqdm import tqdm
 import wandb
 import multiprocessing as mp
-from multiprocessing import Pool
+import torch
+import gc
 
 
 def run_training(parameters):
+    tall = time.time()
     # PRE-PROCESSING
     if parameters.wandb_key:
         init_wandb(parameters)
+    parameters.useGPU = parameters.device
+    if parameters.useGPU == 0:
+        from cuml import UMAP
+    else:
+        from umap import UMAP
+    parameters.umap_module = UMAP
     print("Data Normalization")
     parameters.normalize_func = training_processing\
         .return_normalization_func(parameters)
@@ -35,45 +44,42 @@ def run_training(parameters):
     kmeans_models = []
     for k in parameters.kmeans_list:
         kmeans_models.append(
-            embedding.run_kmeans(k, models_directory, trainingSetData)
+            embedding.run_kmeans(
+                parameters,
+                k,
+                models_directory,
+                trainingSetData
+            )
         )
 
-    # INFERENCING
-    print('Inferencing using UMAP')
+    print("Inferencing using UMAP and KMeans")
     projectionFiles = glob.glob(
         parameters.projectPath + '/Projections/*pcaModes.mat'
     )
-    threads_cpu = parameters.threads_cpu
-    print(f'using {threads_cpu} cpus')
-
-    inferencing_batches = [
-        projectionFiles[i::threads_cpu] for i in range(threads_cpu)
-    ]
-    parameters.normalize_func = None
-    with Pool(threads_cpu) as pool:
-        _ = pool.starmap(
-            inferencing_umap_f_batch,
-            [(
-                batch, parameters, umap_model
-            ) for batch in inferencing_batches]
-        )
-        pool.close()
-        pool.join()
-
-    print('Inferencing using KMeans')
-    for proj_file in tqdm(projectionFiles):
-        if os.path.exists(
-            proj_file[:-4] + f'_clusters_{parameters.kmeans_list[-1]}.mat'
-        ):
+    for i in tqdm(range(len(projectionFiles)), total=len(projectionFiles)):
+        if os.path.exists(projectionFiles[i][:-4] + '_uVals.mat'):
             continue
 
-        projections = hdf5storage.loadmat(proj_file)['projections']
+        # manual garbage collection for cuml
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        projections = hdf5storage.loadmat(projectionFiles[i])['projections']
         inferencing.kmeans_inference_for_individual(
             projections,
             parameters,
-            proj_file,
+            projectionFiles[i],
             kmeans_models
         )
+        inferencing.umap_inference_for_individual(
+            projections,
+            parameters,
+            projectionFiles[i],
+            umap_model
+        )
+        wandb.log({"inferencing/step": i})
+
+    print(f'Embedding and Inference finished in {time.time() - tall} seconds!')
 
     # SEGMENTATION
     print('Watershed Segmentation for UMAP')
@@ -99,31 +105,6 @@ def init_wandb(params):
     )
 
 
-def inferencing_umap_f_batch(
-    inferencing_batch,
-    parameters,
-    umap_model
-):
-    current = mp.current_process()
-
-    for proj_file in tqdm(
-        inferencing_batch,
-        desc=f'id: {os.getpid()}',
-        position=current._identity[0]+1
-    ):
-        if os.path.exists(proj_file[:-4] + '_uVals.mat'):
-            continue
-
-        projections = hdf5storage.loadmat(proj_file)['projections']
-
-        inferencing.umap_inference_for_individual(
-            projections,
-            parameters,
-            proj_file,
-            umap_model
-        )
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="embedding and inferencing using umap and kmeans"
@@ -132,6 +113,7 @@ if __name__ == "__main__":
     parser.add_argument("--min_dist", required=False, type=float)
     parser.add_argument("--threads_cpu", required=False, type=int)
     parser.add_argument("--data", required=False, type=str)
+    parser.add_argument("--device", required=False, type=int)
     args = parser.parse_args()
 
     parameters = training_processing.initialize_training_parameters()
@@ -143,6 +125,8 @@ if __name__ == "__main__":
         parameters.threads_cpu = args.threads_cpu
     if args.data is not None:
         parameters.projectPath = args.data
+    if args.device is not None:
+        parameters.device = args.device
 
     if parameters.threads_cpu == -1:
         parameters.threads_cpu = mp.cpu_count()  # all cores
@@ -154,5 +138,6 @@ if __name__ == "__main__":
         min_dist: {parameters.min_dist}
         threads_cpu: {parameters.threads_cpu}
         data: {parameters.projectPath}
+        device: {parameters.device}
     ''')
     run_training(parameters)

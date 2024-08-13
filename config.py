@@ -49,6 +49,7 @@ err_file = f"{DIR_CSV_LOCAL}/results/log_error.csv"
 n_neighbors = int(os.environ.get("N_NEIGHBORS"))
 min_dist = float(os.environ.get("MIN_DIST"))
 threads_cpu = int(os.environ.get("THREADS_CPU"))
+use_GPU = int(os.environ.get("USE_GPU"))
 
 # Weights-and-biases resource tracking
 wandb_key = os.environ.get("WANDB_API_KEY")

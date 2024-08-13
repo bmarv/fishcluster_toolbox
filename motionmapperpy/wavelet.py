@@ -40,9 +40,9 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
         # print('\t Using GPU #%i'%useGPU)
     else:
         import numpy as np
-        # import multiprocessing as mp
-        # if numProcessors<0:
-        #     numProcessors = mp.cpu_count()
+        import multiprocessing as mp
+        if numProcessors<0:
+            numProcessors = mp.cpu_count()
         # print('\t Using #%i CPUs.' % numProcessors)
 
     projections = np.array(projections)
@@ -60,21 +60,17 @@ def findWavelets(projections, pcaModes, omega0, numPeriods, samplingFreq, maxF, 
         for i in range(pcaModes):
             amplitudes[i*numPeriods:(i+1)*numPeriods] = fastWavelet_morlet_convolution_parallel(i, projections[:, i], f, omega0, dt, useGPU)
     else:
-        # try:
-        #     pool = mp.Pool(numProcessors)
-        #     amplitudes = pool.starmap(fastWavelet_morlet_convolution_parallel,
-        #                               [(i, projections[:, i], f, omega0, dt, useGPU) for i in range(pcaModes)])
-        #     amplitudes = np.concatenate(amplitudes, 0)
-        #     pool.close()
-        #     pool.join()
-        # except Exception as E:
-        #     pool.close()
-        #     pool.join()
-        #     raise E
-        amplitudes = np.zeros((numPeriods*pcaModes,N))
-        for i in range(pcaModes):
-            amplitudes[i*numPeriods:(i+1)*numPeriods] = fastWavelet_morlet_convolution_parallel(i, projections[:, i], f, omega0, dt, useGPU)
-        
+        try:
+            pool = mp.Pool(numProcessors)
+            amplitudes = pool.starmap(fastWavelet_morlet_convolution_parallel,
+                                      [(i, projections[:, i], f, omega0, dt, useGPU) for i in range(pcaModes)])
+            amplitudes = np.concatenate(amplitudes, 0)
+            pool.close()
+            pool.join()
+        except Exception as E:
+            pool.close()
+            pool.join()
+            raise E
     # print('\t Done at %0.02f seconds.'%(time.time()-t1))
     return amplitudes.T, f
 

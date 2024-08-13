@@ -32,6 +32,8 @@ def umap_inference_for_individual(
             numModes,
             parameters
         )
+    if parameters.useGPU >= 0:
+        data = data.get()
     data = data / np.sum(data, 1)[:, None]
     modelsfolder = parameters['projectPath'] + '/Models/'
     um = umap_model
@@ -54,7 +56,7 @@ def umap_inference_for_individual(
         data={'zValues': zValues},
         path='/',
         truncate_existing=True,
-        filename=projectionFile[:-4]+'_uVals.mat',
+        filename=projectionFile[:-4] + '_uVals.mat',
         store_python_metadata=False,
         matlab_compatible=True
     )
@@ -91,6 +93,8 @@ def kmeans_inference_for_individual(
             numModes,
             parameters
         )
+    if parameters.useGPU >= 0:
+        data = data.get()
     clusters_dict = {}
     for idx, k in enumerate(parameters.kmeans_list):
         clusters_dict[f"clusters_{k}"] = kmeans_models[idx].predict(data)
@@ -100,7 +104,7 @@ def kmeans_inference_for_individual(
             data={"clusters": value, "k": int(key.split("_")[1])},
             path='/',
             truncate_existing=True,
-            filename=projectionFile[:-4]+'_%s.mat' % (key),
+            filename=projectionFile[:-4] + '_%s.mat' % (key),
             store_python_metadata=False,
             matlab_compatible=True
         )

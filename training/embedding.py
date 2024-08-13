@@ -1,7 +1,6 @@
 import numpy as np
 import pickle
-from umap import UMAP
-from sklearn.cluster import MiniBatchKMeans as KMeans
+import warnings
 
 
 def run_UMAP(data, parameters, save_model=True):
@@ -29,6 +28,8 @@ def run_UMAP(data, parameters, save_model=True):
     if ~np.all(vals == 1):
         data = data / vals[:, None]
 
+    UMAP = parameters.umap_module
+
     um = UMAP(
         n_neighbors=parameters['n_neighbors'],
         negative_sample_rate=parameters['train_negative_sample_rate'],
@@ -38,23 +39,23 @@ def run_UMAP(data, parameters, save_model=True):
     )
     y = um.fit_transform(data)
     trainmean = np.mean(y, 0)
-    scale = (parameters['rescale_max']/np.abs(y).max())
+    scale = (parameters['rescale_max'] / np.abs(y).max())
     y = y - trainmean
     y = y * scale
 
     if save_model:
         modelsfolder = parameters['projectPath'] + '/Models/'
         np.save(
-            modelsfolder+'_trainMeanScale.npy',
+            modelsfolder + '_trainMeanScale.npy',
             np.array([trainmean, scale], dtype=object)
         )
-        with open(modelsfolder+'umap.model', 'wb') as f:
+        with open(modelsfolder + 'umap.model', 'wb') as f:
             pickle.dump(um, f)
 
     return y, um
 
 
-def run_kmeans(k, models_directory, trainingSetData):
+def run_kmeans(parameters, k, models_directory, trainingSetData):
     """
     Runs the K-means clustering algorithm on the training set data.
     Based on motionmapperpy.
@@ -67,6 +68,16 @@ def run_kmeans(k, models_directory, trainingSetData):
     Returns:
         kmeans: The trained K-means model.
     """
+    if parameters.useGPU >= 0:
+        try:
+            from cuml import KMeans
+        except ModuleNotFoundError as E:
+            warnings.warn("Trying to use GPU but cuml is not installed.\
+                Install cuml or set parameters.useGPU = -1. ")
+            raise E
+    else:
+        from sklearn.cluster import MiniBatchKMeans as KMeans
+
     kmeans = KMeans(
         n_clusters=k,
         random_state=0
