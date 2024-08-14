@@ -15,10 +15,10 @@ $\Rightarrow$ paper: [Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf 
 $\Rightarrow$ link to dataset:
 
 ## Installation
-This codebase has been developed for unix-like systems and the x86 cpu-architecture using Python 3.10.4. \
-To install the required dependencies, please use the python package manager pip:
+This codebase has been developed for unix-like systems and the x86 cpu-architecture using Python 3.9 \
+To install the required dependencies, please use the conda package manager:
 ```bash
-pip install -r requirements.txt
+RUN conda env create --name fishcluster_toolbox --file environment.yml -y
 ```
 After a successful installation, it is required to compile Cython-Code for your machine. For this, please use the [setup.py](./setup.py) file
 ```bash
@@ -30,6 +30,7 @@ Running the setup.py will create a `config.env` file inside the project. Please 
 ```python
 PROJ_PATH="/path/to/your/dataset"
 ```
+Other variables regarding the used dataset and parameters for running the training can be set in the config.env file as well.
 
 ## Getting Started
 ### Data Preprocessing
