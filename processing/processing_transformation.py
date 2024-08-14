@@ -14,6 +14,25 @@ def normalize_origin_of_compartment(data, area, is_back):
         origin2 = new_area[2, 0], new_area[3, 1]
         new_area = -new_area + origin2
         data = -data + origin1 + origin2
+
+        ###Mirror
+            # find mirror line
+        data = np.vstack((data, new_area)) # append area to mirror it as well
+        long_edge_midpoint = (new_area[1] + new_area[2])/2
+        mirror_line_slope = (long_edge_midpoint[1] - new_area[-1,1])/(long_edge_midpoint[0] - new_area[-1,0])
+        mirror_line_intercept = new_area[-1,1] - mirror_line_slope*new_area[-1,0]
+            # find line perpendicular to mirror line for each point
+        orthogonal_mirror_line_slope = -1/mirror_line_slope
+        orthogonal_mirror_line_intercept = data[:,1] - orthogonal_mirror_line_slope*data[:,0]
+            # find intersection of 2 lines for each point
+        intersections_x = (orthogonal_mirror_line_intercept - mirror_line_intercept)/(mirror_line_slope - orthogonal_mirror_line_slope)
+        intersections_y = (mirror_line_slope*orthogonal_mirror_line_intercept - orthogonal_mirror_line_slope*mirror_line_intercept)/(mirror_line_slope - orthogonal_mirror_line_slope)
+            # find mirror image of each point equidistant from intersection
+        mirrored_data_x = 2*intersections_x - data[:,0]
+        mirrored_data_y = 2*intersections_y - data[:,1]
+        mirrored_data = np.vstack((mirrored_data_x, mirrored_data_y)).T
+        new_area = mirrored_data[-new_area.shape[0]:]
+        data = mirrored_data[:-new_area.shape[0]]
     else:
         origin1 = area[1, 0], area[0, 1]
         new_area = area - origin1
