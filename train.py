@@ -19,7 +19,6 @@ def run_training(parameters):
     # PRE-PROCESSING
     if parameters.wandb_key:
         init_wandb(parameters)
-    parameters.useGPU = parameters.device
     if parameters.useGPU == 0:
         from cuml import UMAP
     else:
@@ -126,7 +125,7 @@ if __name__ == "__main__":
     if args.data is not None:
         parameters.projectPath = args.data
     if args.device is not None:
-        parameters.device = args.device
+        parameters.useGPU = args.device
 
     if parameters.threads_cpu == -1:
         parameters.threads_cpu = mp.cpu_count()  # all cores
@@ -138,6 +137,6 @@ if __name__ == "__main__":
         min_dist: {parameters.min_dist}
         threads_cpu: {parameters.threads_cpu}
         data: {parameters.projectPath}
-        device: {parameters.device}
+        device: {parameters.useGPU}
     ''')
     run_training(parameters)
