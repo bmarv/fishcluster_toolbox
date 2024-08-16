@@ -4,6 +4,8 @@ COPY requirements.txt /tmp/requirements.txt
 COPY --from=continuumio/miniconda3 /opt/conda /opt/conda
 ENV PATH=/opt/conda/bin:$PATH
 
+RUN conda config --set remote_read_timeout_secs 2400; conda config --set remote_max_retries 20; \
+    conda config --set remote_backoff_factor 5; conda config --set remote_connect_timeout_secs 200;
 RUN conda create -n rapids-24.08 -c rapidsai -c conda-forge -c nvidia  \
     rapids=24.08 python=3.9 'cuda-version>=11.4,<=11.8' -y
 
