@@ -25,7 +25,7 @@ THRESHOLD_AREA_PX = int(os.environ["THRESHOLD_AREA_PX"])
 # FILTERING
 AREA_FILTER = int(os.environ["AREA_FILTER"])  # 1 to filter by area, else 0
 DIRT_FILTER = int(os.environ["DIRT_FILTER"])  # 1 to filter by dirt, else 0
-DIR_CSV_LOCAL = os.environ["PROJ_PATH"] + f"/FE_tracks_060000_{BLOCK}"
+DIR_CSV_LOCAL = os.environ["PROJ_PATH"] + f"/PE_tracks_final_{BLOCK}"
 FRONT, BACK = "front", "back"
 CONFIG_DATA = os.environ["CONFIG_DATA"]
 config_path = f"{DIR_CSV_LOCAL}/" + os.environ["CONFIG_DATA"]
