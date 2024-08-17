@@ -14,7 +14,36 @@ This repository provides a comprehensive set of tools for conducting behavioural
 $\Rightarrow$ paper: [Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf M. Developmental arcs of plasticity in whole movement repertoires of a clonal fish. bioRxiv. 2023:2023-12.](https://www.biorxiv.org/content/10.1101/2023.12.07.570540v1) \
 $\Rightarrow$ link to dataset:
 
-## Installation
+## Getting started using Docker
+For easier software support across platforms and architectures, working with docker images and containers might be of help. 
+For this a docker-deamon is required on the host machine.
+### Pulling from Dockerhub
+To pull the lastest cpu-image from dockerhub, please run the following command:
+```bash
+docker pull bmarv/fishcluster_toolbox:latest
+```
+
+### Modes and Dataset
+This Docker Image supports multiple modes, that work in coherence with the later in greater detail described program-parts [preprocessing](#preprocessing), [training](#training) and [downstream](#downstream-analyses) analyses. All three modes can be activated as individual program-parts depending on the usecase. 
+
+It is neccessary to also mount a dataset as a volume to the container for it to function.
+
+Preprocessing the dataset to have the expected format for the training process requires the container to run with the following command:
+```bash
+docker run -e MODE=preprocessing -v /path/to/your/dataset/:/mnt/ bmarv/fishcluster_toolbox:latest
+```
+Analogous, running training can be done using:
+```bash
+docker run -e MODE=training -e WANDB_API_KEY=pasteHereYourWandBKey -v /path/to/your/dataset/:/mnt/ bmarv/fishcluster_toolbox:latest
+```
+Starting downstream analyses can be done using the following command:
+```bash 
+docker run -e MODE=downstream -v /path/to/your/dataset/:/mnt/ bmarv/fishcluster_toolbox:latest
+```
+
+Should different parameters be utilized, then these can be specified also using environment variables to the container. 
+
+## Manual Installation
 This codebase has been developed for unix-like systems and the x86 cpu-architecture using Python 3.9 \
 To install the required dependencies, please use the conda package manager:
 ```bash
