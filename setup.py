@@ -4,8 +4,8 @@ import numpy
 import os
 import shutil
 
-env = "config_processing.env"
-env_default = "scripts/env.default.sh"
+env = "config.env"
+env_default = "misc/config.env.default"
 
 if not os.path.exists(env):
     shutil.copyfile(env_default, env)
@@ -22,7 +22,6 @@ setup(
     name="fishcluster_toolbox",
     version="0.1",
     author="MRB",
-    author_email="beesemarvin@gmail.com",
     description="Preprocessing and Unsupervised Learning\
          of behavioural trajectories",
     ext_modules=cythonize(extensions),

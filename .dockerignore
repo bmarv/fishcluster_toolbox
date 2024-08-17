@@ -1,0 +1,8 @@
+.git/
+.venv/
+build/
+wandb/
+**__pycache__/
+*.c
+*.so
+*.env

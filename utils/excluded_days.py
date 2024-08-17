@@ -20,7 +20,7 @@ def date2dateid(datestr):
     day = int(ds[0][:2])
     month = list(calendar.month_abbr).index(ds[1])
     year = int("20"+ds[2][:2])
-    return "%s%02d%02d"%(year, month, day)
+    return "%s%02d%02d" % (year, month, day)
 
 
 def get_excluded_days(fish_ids):
@@ -36,5 +36,9 @@ def get_excluded_days(fish_ids):
     for row in mdays.iterrows():
         flt_ids = list(filter(lambda fid: filter_ids(row[1], fid), fish_ids))
         if len(flt_ids) > 0:
-            exclude["%s_%s" % (flt_ids[0], date2dateid(row[1]["day"]))] = ["%06d" % i for i in range(15) if (row[1]["track_%02d" % i] == 1)]
+            exclude["%s_%s" % (
+                flt_ids[0], date2dateid(row[1]["day"])
+            )] = ["%06d" % i for i in range(15) if (
+                row[1]["track_%02d" % i] == 1
+            )]
     return exclude

@@ -1,5 +1,5 @@
 import numpy as np
-import config_processing as config
+import config
 
 
 def get_spikes_filter(steps):
@@ -47,24 +47,12 @@ def compute_turning_angles(points):
 
     # Compute the turning angles
     turning_angles = np.arctan2(determinants, dot_products)
+    turning_angles_abs_val = abs(np.arctan2(determinants, dot_products))
     turning_angles_result = np.zeros(points.shape[0] - 2)
+    turning_angles_result_abs_val = np.zeros(points.shape[0] - 2)
     # the last one is buried in the angle if not False anyways
     wanted_angles = np.where(wanted_indices)[0][1:] - 1
     # Set the turning angles to 0 for equal consecutive points
     turning_angles_result[wanted_angles] = turning_angles
-    return turning_angles_result
-
-
-def entropy_heatmap(chunk, area, bins=(18, 18)):
-    """Calculate the 2D histogram of the chunk"""
-    th = config.THRESHOLD_AREA_PX
-    xmin, xmax = min(area[:, 0]) - th, max(area[:, 0]) + th
-    ymin, ymax = min(area[:, 1]) - th, max(area[:, 1]) + th
-
-    return np.histogram2d(
-        chunk[:, 0],
-        chunk[:, 1],
-        bins=bins,
-        density=False,
-        range=[[xmin, xmax], [ymin, ymax]],
-    )[0]
+    turning_angles_result_abs_val[wanted_angles] = turning_angles_abs_val
+    return turning_angles_result_abs_val

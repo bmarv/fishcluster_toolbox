@@ -5,6 +5,7 @@ import hdf5storage
 import time
 from skimage.segmentation import watershed
 from skimage.filters import roberts
+from tqdm import tqdm
 
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
@@ -14,7 +15,7 @@ bmapcmap = gencmap()
 
 
 def wshedTransform(zValues, min_regions, sigma, tsnefolder, saveplot=True):
-    print('Starting watershed transform...')
+    # print('Starting watershed transform...')
 
     bounds, xx, density = findPointDensity(zValues, sigma, 610,
                                                    rangeVals=[-np.abs(zValues).max() - 15, np.abs(zValues).max() + 15])
@@ -22,7 +23,7 @@ def wshedTransform(zValues, min_regions, sigma, tsnefolder, saveplot=True):
     wshed[density < 1e-5] = 0
     numRegs = len(np.unique(wshed)) - 1
 
-    if numRegs < min_regions - 10:
+    if numRegs < min_regions - 3:
         raise ValueError('\t Starting sigma %0.1f too high, maximum # wshed regions possible is %i.' %
                          (sigma, numRegs))
 
@@ -67,11 +68,11 @@ def wshedTransform(zValues, min_regions, sigma, tsnefolder, saveplot=True):
 def velGMM(ampV, parameters, projectPath, saveplot=True):
     if parameters.method == 'TSNE':
         if parameters.waveletDecomp:
-            tsnefolder = projectPath + '/TSNE/'
+            modelsfolder = projectPath + '/TSNE/'
         else:
-            tsnefolder = projectPath + '/TSNE_Projections/'
+            modelsfolder = projectPath + '/TSNE_Projections/'
     else:
-        tsnefolder = projectPath+'/UMAP/'
+        modelsfolder = projectPath+'/Models/'
     ampVels = ampV * parameters['samplingFreq']
     vellog10all = np.log10(ampVels[ampVels > 0])
     npoints = min(50000, len(vellog10all))
@@ -105,7 +106,7 @@ def velGMM(ampV, parameters, projectPath, saveplot=True):
         ax.set_xlabel(r'$log_{10}$ Velocity')
         ax.set_ylabel('PDF')
 
-        fig.savefig(tsnefolder + 'zVelocity.png', )
+        fig.savefig(modelsfolder + 'zVelocity.png', )
         plt.close()
         plt.switch_backend(bend)
 
@@ -146,11 +147,11 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     projectionfolder = parameters.projectPath + '/Projections/'
     if parameters.method == 'TSNE':
         if parameters.waveletDecomp:
-            tsnefolder = parameters.projectPath + '/TSNE/'
+            modelsfolder = parameters.projectPath + '/TSNE/'
         else:
-            tsnefolder = parameters.projectPath + '/TSNE_Projections/'
+            modelsfolder = parameters.projectPath + '/TSNE_Projections/'
     elif parameters.method == 'UMAP':
-        tsnefolder = parameters.projectPath+ '/UMAP/'
+        modelsfolder = parameters.projectPath+ '/Models/'
     else:
         raise ValueError('parameters.method can only take values \'TSNE\' or \'UMAP\'')
 
@@ -167,10 +168,10 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     zValNames = []
     zValLens = []
     ampVels = []
-    for pi, projfile in enumerate(projfiles):
+    for pi, projfile in tqdm(enumerate(projfiles), total=len(projfiles)):
         fname = projfile.split('/')[-1].split('.')[0]
         zValNames.append(fname)
-        print('%i/%i Loading embedding for %s %0.02f seconds.' % (pi + 1, len(projfiles), fname, time.time() - t1))
+        # print('%i/%i Loading embedding for %s %0.02f seconds.' % (pi + 1, len(projfiles), fname, time.time() - t1))
         if parameters.method == 'TSNE':
             zValident = 'zVals' if parameters.waveletDecomp else 'zValsProjs'
         else:
@@ -190,9 +191,9 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
     zValLens = np.array(zValLens)
     # print(zValNames)
     zValNames = np.array(zValNames, dtype=object)
-    LL, wbounds, sigma, xx, density = wshedTransform(zValues, minimum_regions, startsigma, tsnefolder, saveplot=True)
+    LL, wbounds, sigma, xx, density = wshedTransform(zValues, minimum_regions, startsigma, modelsfolder, saveplot=True)
 
-    print('Assigning watershed regions...')
+    # print('Assigning watershed regions...')
     watershedRegions = np.digitize(zValues, xx)
     watershedRegions = LL[watershedRegions[:, 1], watershedRegions[:, 0]]
 
@@ -204,7 +205,7 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
                    'density': density, 'LL': LL, 'watershedRegions': watershedRegions, 'v': ampVels, 'pRest': pRest,
                    'wbounds': wbounds}
         hdf5storage.write(data=outdict, path='/', truncate_existing=True,
-                          filename=tsnefolder + 'zVals_wShed_groups.mat', store_python_metadata=False,
+                          filename=modelsfolder + 'zVals_wShed_groups.mat', store_python_metadata=False,
                           matlab_compatible=True)
 
         print('\t tempsave done.')
@@ -224,18 +225,18 @@ def findWatershedRegions(parameters, minimum_regions=150, startsigma=0.1, pThres
                'density':density, 'LL':LL, 'watershedRegions':watershedRegions, 'v':ampVels, 'pRest':pRest,
                'wbounds':wbounds}
     hdf5storage.write(data=outdict, path='/', truncate_existing=True,
-                          filename=tsnefolder + zVals_wShed_groups, store_python_metadata=False,
+                          filename=modelsfolder + zVals_wShed_groups, store_python_metadata=False,
                           matlab_compatible=True)
-    print('\t tempsave done.')
+    # print('\t tempsave done.')
 
     groups = makeGroupsAndSegments(watershedRegions, zValLens, min_length=min_length_videos)
     outdict = {'zValues': zValues, 'zValNames': zValNames, 'zValLens': zValLens, 'sigma': sigma, 'xx': xx,
                'density': density, 'LL': LL, 'watershedRegions': watershedRegions, 'v': ampVels, 'pRest': pRest,
                'wbounds': wbounds, 'groups': groups}
     hdf5storage.write(data=outdict, path='/', truncate_existing=True,
-                      filename=tsnefolder + zVals_wShed_groups, store_python_metadata=False,
+                      filename=modelsfolder + zVals_wShed_groups, store_python_metadata=False,
                       matlab_compatible=True)
 
-    print('All data saved in %s.'%(tsnefolder.split('/')[-2]+'/' + zVals_wShed_groups))
+    print('\tsaved in %s.'%(modelsfolder.split('/')[-2]+'/' + zVals_wShed_groups))
 
 

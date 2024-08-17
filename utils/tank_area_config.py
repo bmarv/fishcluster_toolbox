@@ -3,7 +3,7 @@ import json
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-import config_processing as config
+import config
 from utils.processing_utils import get_camera_pos_keys
 
 
@@ -18,7 +18,7 @@ def get_area_functions():
 
 
 def get_calibration_functions():
-    calibration_file = f"{config.CONFIG_DATA}/calibration.json"
+    calibration_file = f"{config.config_path}/calibration.json"
     if not os.path.exists(calibration_file):
         try:
             calibration = compute_calibrations()
@@ -37,9 +37,9 @@ def get_calibration_functions():
 
 
 def read_area_data_from_json():
-    if not os.path.exists("{}/area_data.json".format(config.CONFIG_DATA)):
+    if not os.path.exists("{}/area_data.json".format(config.config_path)):
         return get_areas()
-    with open("{}/area_data.json".format(config.CONFIG_DATA), "r") as infile:
+    with open("{}/area_data.json".format(config.config_path), "r") as infile:
         area_data = json.load(infile)
         for k in area_data.keys():
             area_data[k] = np.array(area_data[k])
@@ -62,9 +62,14 @@ def get_areas():
                 key = "%s_%s" % (c, p)
                 for line in file_read.readlines():
                     if "Last" in line:
-                        poly = [ll.split(",") for ll in line.split("#")[2].split(";")]
+                        poly = [(
+                            ll.split(",") for ll in line.split("#")[2]
+                            .split(";")
+                        )]
                         data_a = np.array(poly).astype(np.float64)
-                        if key not in area_data or area_data[key].size > data_a.size:
+                        if (key not in area_data) or (
+                            area_data[key].size > data_a.size
+                        ):
                             area_data[key] = data_a
                             continue
                 if area_data[key].shape[0] == 5 and len(example_dict[p]) == 0:
@@ -76,7 +81,9 @@ def get_areas():
             if area_data[k] is None:
                 del area_data[k]
 
-    missing_areas = [c for c in get_camera_pos_keys() if c not in area_data.keys()]
+    missing_areas = [c for c in get_camera_pos_keys() if (
+        c not in area_data.keys()
+    )]
     if len(missing_areas) > 0:
         print("Missing Areas:", missing_areas)
     for m_k in missing_areas:
@@ -101,7 +108,10 @@ def update_area(example, area):
 
 
 def write_area_data_to_json(area_data):
-    area_d = dict(zip(area_data.keys(), map(lambda v: v.tolist(), area_data.values())))
+    area_d = dict(zip(
+        area_data.keys(),
+        map(lambda v: v.tolist(), area_data.values())
+    ))
     with open("{}/area_data.json".format(config.CONFIG_DATA), "w") as outfile:
         json.dump(area_d, outfile, indent=2)
 
@@ -136,6 +146,6 @@ def compute_calibrations():
                     calibration[c] = config.CALIBRATION_DIST_CM / np.mean(
                         np.sqrt(np.sum((cal[:2] - cal[2:]) ** 2, axis=1))
                     )
-    with open(f"{config.CONFIG_DATA}/calibration.json", "w") as f:
+    with open(f"{config.config_path}/calibration.json", "w") as f:
         json.dump(calibration, f, indent=2)
     return calibration

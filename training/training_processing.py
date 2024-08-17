@@ -3,10 +3,23 @@ import shutil
 import h5py
 import hdf5storage
 import numpy as np
+import glob
+from tqdm import tqdm
 
 from utils import utils
-from processing.data_processing import load_trajectory_data
 import motionmapperpy as mmpy
+
+
+def load_trajectory_data(parameters, fk="", day=""):
+    data_by_day = []
+    pfile = glob.glob(
+        parameters.projectPath + f'/Projections/{fk}*_{day}*_pcaModes.mat'
+    )
+    pfile.sort()
+    for f in tqdm(pfile):
+        data = hdf5storage.loadmat(f)
+        data_by_day.append(data)
+    return data_by_day
 
 
 def initialize_training_parameters():
@@ -27,18 +40,10 @@ def initialize_training_parameters():
             re-embedding points on a learned map.
     """
     parameters = utils.set_parameters()
-    parameters.useGPU = 0  # 0 for GPU, -1 for CPU
     parameters.training_numPoints = 5000  # Number of points in mini-trainings.
     parameters.trainingSetSize = 72000
     parameters.embedding_batchSize = 30000
 
-    utils.createProjectDirectory(parameters.projectPath)
-
-    if parameters.useGPU == 0:
-        from cuml import UMAP  # GPU
-    else:
-        from umap import UMAP
-    parameters.umap_module = UMAP
     return parameters
 
 
@@ -59,7 +64,7 @@ def return_normalization_func(parameters):
         [d["projections"] for d in load_trajectory_data(parameters)]
     )
     std = data.std(axis=0)
-    return lambda pro: pro/std
+    return lambda pro: pro / std
 
 
 def subsample_from_projections(parameters):
@@ -73,25 +78,25 @@ def subsample_from_projections(parameters):
         tuple: A tuple containing the subsampled
         training data and training amplitudes.
     """
-    projection_directory = parameters.projectPath+'/Projections/'
-    tsne_directory = parameters.projectPath + '/UMAP/'
+    projection_directory = parameters.projectPath + '/Projections/'
+    model_directory = parameters.projectPath + '/Models/'
 
-    if not os.path.exists(tsne_directory+'training_data.mat'):
+    if not os.path.exists(model_directory + 'training_data.mat'):
         trainingSetData, trainingSetAmps, _ = mmpy.runEmbeddingSubSampling(
             projection_directory,
             parameters
         )
-        if os.path.exists(tsne_directory):
-            shutil.rmtree(tsne_directory)
-            os.mkdir(tsne_directory)
+        if os.path.exists(model_directory):
+            shutil.rmtree(model_directory)
+            os.mkdir(model_directory)
         else:
-            os.mkdir(tsne_directory)
+            os.mkdir(model_directory)
 
         hdf5storage.write(
             data={'trainingSetData': trainingSetData},
             path='/',
             truncate_existing=True,
-            filename=tsne_directory+'/training_data.mat',
+            filename=model_directory + '/training_data.mat',
             store_python_metadata=False,
             matlab_compatible=True
         )
@@ -100,13 +105,11 @@ def subsample_from_projections(parameters):
             data={'trainingSetAmps': trainingSetAmps},
             path='/',
             truncate_existing=True,
-            filename=tsne_directory + '/training_amps.mat',
+            filename=model_directory + '/training_amps.mat',
             store_python_metadata=False,
             matlab_compatible=True
         )
     else:
-        print('Subsampled trainingSetData found, \
-            skipping minitSNE and running training tSNE')
-        with h5py.File(tsne_directory + '/training_data.mat', 'r') as hfile:
+        with h5py.File(model_directory + '/training_data.mat', 'r') as hfile:
             trainingSetData = hfile['trainingSetData'][:].T
     return trainingSetData

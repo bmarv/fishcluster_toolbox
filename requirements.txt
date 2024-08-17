@@ -6,8 +6,10 @@ hdf5storage==0.1.19
 matplotlib==3.8.3
 moviepy==1.0.3
 numpy==1.23.5
+openpyxl==3.1.2
 pandas==1.5.3
 scikit-image==0.20.0
 scipy==1.8.0
 tqdm==4.65.0
 umap-learn==0.5.3
+wandb==0.17.5

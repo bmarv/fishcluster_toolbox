@@ -4,33 +4,43 @@ import re
 import os
 import glob
 from itertools import product
-from config import projectPath
-import config_processing as config
+import config
 
 
 def get_directory(is_back=None):
-    BLOCK = os.environ['BLOCK']
+    BLOCK = config.BLOCK
     if is_back is None:
         raise Exception("define kwargs is_back")
     if is_back:
-        return f'{projectPath}/PE_tracks_final_{BLOCK}/PE_tracks_final_{BLOCK}_back'
+        return f'{config.PROJ_PATH}/FE_tracks_060000_{BLOCK}'\
+            f'/FE_{BLOCK}_060000_back_final'
     else:
-        return f'{projectPath}/PE_tracks_final_{BLOCK}/PE_tracks_final_{BLOCK}_front'
+        return f'{config.PROJ_PATH}/FE_tracks_060000_{BLOCK}'\
+            f'/FE_{BLOCK}_060000_front_final'
 
 
 def get_camera_names(is_back=False):
     dir_ = get_directory(is_back)
     return sorted(
-        [name for name in os.listdir(dir_) if len(name) == 8 and name.isnumeric()]
+        [
+            name for name in os.listdir(dir_)
+            if len(name) == 8 and name.isnumeric()
+        ]
     )
 
 
 def get_fish2camera_map():
     l_front = list(
-        product(get_camera_names(is_back=config.BACK == config.FRONT), [config.FRONT])
+        product(
+            get_camera_names(is_back=config.BACK == config.FRONT),
+            [config.FRONT]
+        )
     )
     l_back = list(
-        product(get_camera_names(is_back=config.BACK == config.BACK), [config.BACK])
+        product(
+            get_camera_names(is_back=config.BACK == config.BACK),
+            [config.BACK]
+        )
     )
     return np.array(l_back + l_front)
 
@@ -45,7 +55,8 @@ def verify_day_directory(name, camera):
         return True
     elif name[:8].isnumeric():
         print(
-            "WARNING: for CAMERA %s day directory name %s does not follow name-convention of date_starttime.camera_* and will be ignored"
+            "WARNING: for CAMERA %s day directory name %s does not follow \
+                name-convention of date_starttime.camera_* and will be ignored"
             % (camera, name)
         )
         return False
@@ -71,7 +82,8 @@ def get_days_in_order(interval=None, is_back=None, camera=None):
     days_unique = sorted(list(set(days)))
     if len(days_unique) < len(days):
         print(
-            "WARNING DUPLICATE DAY: CAMERA %s_%s some days are duplicated, please check the directory"
+            "WARNING DUPLICATE DAY: CAMERA %s_%s some days are duplicated, \
+                please check the directory"
             % (camera, config.BACK if is_back else config.FRONT)
         )
     if interval:
@@ -146,7 +158,7 @@ def csv_of_the_day(
         filenames_f,
         n_files=config.MAX_BATCH_IDX + 1,
         min_idx=config.MIN_BATCH_IDX,
-    )  # filters for duplicates in the batches for a day. It takes the LAST one!
+    )  # filters for duplicates in the batches for a day & takes the LAST one
     for key in batch_keys_remove:
         filtered_files.pop(key, None)
     file_keys = list(filtered_files.keys())
@@ -176,7 +188,9 @@ def filter_files(c, d, files, n_files=15, min_idx=0, Logger=None):
     for i in range(min_idx, n_files):
         key_i = "{:06d}".format(i)
         pattern = re.compile(
-            ".*{}_{}.{}_{}_\d*-\d*-\d*T\d*_\d*_\d*_\d*.csv".format(c, d[:15], c, key_i)
+            ".*{}_{}.{}_{}_\d*-\d*-\d*T\d*_\d*_\d*_\d*.csv".format(
+                c, d[:15], c, key_i
+            )
         )
         i_f = [f for f in files if pattern.match(f) is not None]
 
@@ -211,7 +225,8 @@ def filter_files(c, d, files, n_files=15, min_idx=0, Logger=None):
     if Logger and len(corrupted_f) > 0:
         msg_counter += 1
         Logger.debug(
-            "The following file names are corrupted, maybe wrong folder: \n\t\t\t\t{}".format(
+            "The following file names are corrupted, \
+                 maybe wrong folder: \n\t\t\t\t{}".format(
                 "\n\t".join(corrupted_f)
             )
         )
@@ -225,17 +240,29 @@ def start_time_of_day_to_seconds(START_TIME):
     """
     if len(START_TIME) == 6:
         return (
-            int(START_TIME[:2]) * 3600 + int(START_TIME[2:4]) * 60 + int(START_TIME[4:])
+            int(START_TIME[:2]) * 3600 + int(START_TIME[2:4]) * 60 + int(
+                START_TIME[4:]
+            )
         )
     else:
         raise ValueError("START_TIME must be of length 6")
 
 
 def get_individuals_keys(parameters, block=""):
-    files = glob.glob(parameters.projectPath+f"/Projections/{block}*_pcaModes.mat")
-    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[:3]), files))))
+    files = glob.glob(
+        parameters.projectPath+f"/Projections/{block}*_pcaModes.mat"
+    )
+    return sorted(list(set(map(
+        lambda f: "_".join(f.split("/")[-1].split("_")[:3]),
+        files
+    ))))
 
 
 def get_days(parameters, prefix=""):
-    files = glob.glob(parameters.projectPath+f"/Projections/{prefix}*_pcaModes.mat")
-    return sorted(list(set(map(lambda f: "_".join(f.split("/")[-1].split("_")[3:5]), files))))
+    files = glob.glob(
+        parameters.projectPath+f"/Projections/{prefix}*_pcaModes.mat"
+    )
+    return sorted(list(set(map(
+        lambda f: "_".join(f.split("/")[-1].split("_")[3:5]),
+        files
+    ))))

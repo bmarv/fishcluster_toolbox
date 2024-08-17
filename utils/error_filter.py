@@ -1,5 +1,5 @@
 import numpy as np
-import config_processing as config
+import config
 from processing.processing_methods import distance_to_wall_chunk, calc_steps
 from processing.processing_transformation import px2cm
 
