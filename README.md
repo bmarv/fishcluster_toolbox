@@ -110,6 +110,10 @@ For calculations of the features, we calculate the step size by measuring the Eu
 The turning angle is calculated using the arctan function with the perpendicular and base lengths of a triangle formed by three consecutive data points. 
 The distance to the wall measures the Euclidean distance between a data point and the nearest wall, and converting it from pixels to centimeters. We use a window size of 1 data point.
 
+For an updated mean of dealing with the distance to the wall we also include with pods circular 'walls' within the tank. 
+These should defined in a csv-file (PE_coordinates_pots.csv) inside the dataset directory. 
+Mirrored representations of the back-compartments enable now increased comparability to the front compartments.
+
 ### Embedding and Inferencing
 In the training preprocessing stage, we perform normalization and apply the Morelet wavelet transformation [[8]](#8-b-cazelles-et-al-wavelet-analysis-of-ecological-time-series-oecologia-156-287304-2008) to the data. This transformation results in 75 features, obtained by combining the 3 original features with 25 frequencies. Additionally, we use subsampling techniques. 
 
