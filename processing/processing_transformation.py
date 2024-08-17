@@ -1,6 +1,7 @@
 import numpy as np
 from utils.tank_area_config import get_area_functions, \
     get_calibration_functions
+from utils.processing_utils import mirror_data_for_back_compartment
 import config
 
 FUNCS_PX2CM = None
@@ -14,56 +15,21 @@ def normalize_origin_of_compartment(data, area, circular_walls, is_back):
         origin2 = new_area[2, 0], new_area[3, 1]
         new_area = -new_area + origin2
         data = -data + origin1 + origin2
-        
         center_els = []
         for pod_el in circular_walls:
             center_els.append(
                 - np.array(pod_el["center"]) + origin1 + origin2
             )
         np_centers = np.array(center_els)
-
-        # Mirror
-        # find mirror line
-        original_data_shape = data.shape
-        data = np.vstack((data, new_area, np_centers))  # append area to mirror it as well
-        long_edge_midpoint = (new_area[1] + new_area[2]) / 2
-        mirror_line_slope = (long_edge_midpoint[1] - new_area[-1, 1]) / (
-            long_edge_midpoint[0] - new_area[-1, 0]
+        data, new_area, new_center = mirror_data_for_back_compartment(
+            data, new_area, np_centers
         )
-        mirror_line_intercept = new_area[-1, 1] - (
-            mirror_line_slope * new_area[-1, 0]
-        )
-        # find line perpendicular to mirror line for each point
-        orthogonal_mirror_line_slope = -1 / mirror_line_slope
-        orthogonal_mirror_line_intercept = (
-            data[:, 1] - orthogonal_mirror_line_slope * data[:, 0]
-        )
-        # find intersection of 2 lines for each point
-        intersections_x = (
-            orthogonal_mirror_line_intercept - mirror_line_intercept) / (
-            mirror_line_slope - orthogonal_mirror_line_slope
-        )
-        intersections_y = (
-            mirror_line_slope * orthogonal_mirror_line_intercept
-            - orthogonal_mirror_line_slope * mirror_line_intercept
-        ) / (mirror_line_slope - orthogonal_mirror_line_slope)
-        # find mirror image of each point equidistant from intersection
-        mirrored_data_x = 2 * intersections_x - data[:, 0]
-        mirrored_data_y = 2 * intersections_y - data[:, 1]
-        mirrored_data = np.vstack((mirrored_data_x, mirrored_data_y)).T
-
-        data = mirrored_data[:original_data_shape[0]]
-        new_area = mirrored_data[original_data_shape[0]: -np_centers.shape[0]]
-        new_center = mirrored_data[data.shape[0] + new_area.shape[0]:]
-
-        # TODO: mirror pods-locations
         new_circular_walls = []
         for idx, pod_el in enumerate(circular_walls):
             new_circular_walls.append({
                 "center": new_center[idx],
                 "radius": pod_el["radius"]
             })
-
     else:
         origin1 = area[1, 0], area[0, 1]
         new_area = area - origin1
