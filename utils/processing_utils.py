@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import numpy as np
 import re
@@ -105,6 +106,94 @@ def read_batch_csv(filename, drop_errors):
         df = df.drop(index=df[:-1][err_filter].index)
     df.reset_index(drop=True, inplace=True)
     return df
+
+
+def get_center_radius_for_pods(
+    fk: str, block: str, pod_locations_df: pd.DataFrame
+) -> list:
+    """
+    Given a definition of a pods-location environment-variable, which specifies
+    the path of a csv-file, and the current fishkey, this method resolves the
+    center and the radius of the pod. Per individual in
+    the PE-Experiment, 3 pods are used: a small, medium and large one.
+    This method returns list of dict-elements for every pod.
+
+    @params
+    fk: str, ex. '23442333_front'
+    block: str, ex. 'block1'
+    pod_locations_df: pd.Dataframe
+    @Returns
+    [
+        {"center": [1800, 750], "radius": 200},
+        {"center": [1250, 1050], "radius": 25},
+        {"center": [1000, 500], "radius": 15}
+    ]
+    """
+    circular_walls = []
+    pod_locs_list = get_pod_locations(
+        fk, block, pod_locations_df
+    )
+    for pod_locs in pod_locs_list:
+        point1 = int(pod_locs['origin_x']), int(pod_locs['origin_y'])
+        point2 = int(pod_locs['end_x']), int(pod_locs['end_y'])
+        center, radius = calculate_center_and_radius(point1, point2)
+        circular_walls.append({
+            "center": center, "radius": radius
+        })
+    return circular_walls
+
+
+def get_pod_locations(
+    fk: str, block: str, pod_locations_df: pd.DataFrame
+) -> list:
+    """
+    Given a definition of a pods-location environment-variable, which specifies
+    the path of a csv-file, and the current fishkey, this method resolves the
+    origin and end x and y positions of the pod-locations. Per individual in the
+    PE-Experiment, 3 pods are used: a small, medium and large one. 
+    This method returns a dataframe for every position
+
+    @params
+    fk: str, ex. '23442333_front'
+    block: str, ex. 'block1'
+    pod_locations_df: pd.Dataframe
+    @Returns
+    [
+        pd.DataFrame[s_xorigin, s_yorigin, s_xend, s_yend],
+        pd.DataFrame[m_xorigin, m_yorigin, m_xend, m_yend]
+        pd.DataFrame[l_xorigin, l_yorigin, l_xend, l_yend]
+    ]
+    """
+    cam_id, compartment = fk.split('_')
+    number_pattern = r'\d+'
+    block_nr = re.search(number_pattern, block).group()
+    
+    rel_pod_locations = pod_locations_df[
+        (
+            pod_locations_df['block'] == int(block_nr)) & (
+                pod_locations_df['camera_id'] == int(cam_id)) & (
+                    pod_locations_df['front_or_back'].str.startswith(
+                        compartment, na=False))
+    ]
+    small_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'small'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    medium_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'medium'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    large_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'large'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    return small_loc_df, medium_loc_df, large_loc_df
+
+
+def calculate_center_and_radius(point1, point2):
+    # Normalization
+    x1 = min(point1[0], point2[0])
+    y1 = min(point1[1], point2[1])
+    x2 = max(point1[0], point2[0])
+    y2 = max(point1[1], point2[1])
+    # center
+    x_c = (x1 + x2) / 2
+    y_c = (y1 + y2) / 2
+
+    d = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  # diagonal
+    r = d / 2  # radius
+    return (x_c, y_c), r
 
 
 def get_error_indices(dataframe):

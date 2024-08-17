@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from utils.utils import set_parameters
 from utils.processing_utils import get_camera_pos_keys, csv_of_the_day, \
-    start_time_of_day_to_seconds, get_days_in_order
+    start_time_of_day_to_seconds, get_days_in_order, get_center_radius_for_pods
 from utils.excluded_days import get_excluded_days, block1_remove
 from utils.tank_area_config import get_area_functions
 from utils.error_filter import all_error_filters
@@ -21,6 +21,7 @@ from utils.metrics import update_filter_three_points, compute_turning_angles, \
 import config
 WAVELET = 'wavelet'
 clusterStr = 'clusters'
+POD_LOCATION_DF = pd.read_csv(config.POD_LOC_CSV, sep=',')
 
 
 def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
@@ -34,12 +35,15 @@ def transform_to_traces_high_dim(data, frame_idx, filter_index, area_tuple):
         distance to the wall, x, y] and new area
     """
     fk, area = area_tuple
-    data, new_area = normalize_origin_of_compartment(
-        data, area, config.BACK in fk
+    circular_walls = get_center_radius_for_pods(
+        fk, config.BLOCK, POD_LOCATION_DF
+    )
+    data, new_area, circular_walls = normalize_origin_of_compartment(
+        data, area, circular_walls, config.BACK in fk
     )
     steps = px2cm(compute_step_lengths(data))
     t_a = compute_turning_angles(data)
-    wall = px2cm(distance_to_wall_chunk(data, new_area))
+    wall = px2cm(distance_to_wall_chunk(data, new_area, circular_walls))
     f3 = update_filter_three_points(steps, filter_index)
     X = np.array((
         frame_idx[1:-1],

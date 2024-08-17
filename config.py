@@ -18,6 +18,9 @@ for block_nr in range(1, N_BLOCKS + 1):
     if block_nr == 1:
         BLOCK = f"block{block_nr}"
 
+# POD LOCATIONS
+POD_LOC_CSV = f"{PROJ_PATH}/PE_coordinates_pots.csv"
+
 # THRESHOLDS for the data set filtered for erroneous frames
 SPIKE_THRESHOLD = int(os.environ["SPIKE_THRESHOLD"])
 DIRT_THRESHOLD = int(os.environ["DIRT_THRESHOLD"])
