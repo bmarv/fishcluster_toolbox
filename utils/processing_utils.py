@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import numpy as np
 import re
@@ -12,11 +13,11 @@ def get_directory(is_back=None):
     if is_back is None:
         raise Exception("define kwargs is_back")
     if is_back:
-        return f'{config.PROJ_PATH}/FE_tracks_060000_{BLOCK}'\
-            f'/FE_{BLOCK}_060000_back_final'
+        return f'{config.PROJ_PATH}/PE_tracks_final_{BLOCK}'\
+            f'/PE_tracks_final_{BLOCK}_back'
     else:
-        return f'{config.PROJ_PATH}/FE_tracks_060000_{BLOCK}'\
-            f'/FE_{BLOCK}_060000_front_final'
+        return f'{config.PROJ_PATH}/PE_tracks_final_{BLOCK}'\
+            f'/PE_tracks_final_{BLOCK}_front'
 
 
 def get_camera_names(is_back=False):
@@ -105,6 +106,133 @@ def read_batch_csv(filename, drop_errors):
         df = df.drop(index=df[:-1][err_filter].index)
     df.reset_index(drop=True, inplace=True)
     return df
+
+
+def get_center_radius_for_pods(
+    fk: str, block: str, pod_locations_df: pd.DataFrame
+) -> list:
+    """
+    Given a definition of a pods-location environment-variable, which specifies
+    the path of a csv-file, and the current fishkey, this method resolves the
+    center and the radius of the pod. Per individual in
+    the PE-Experiment, 3 pods are used: a small, medium and large one.
+    This method returns list of dict-elements for every pod.
+
+    @params
+    fk: str, ex. '23442333_front'
+    block: str, ex. 'block1'
+    pod_locations_df: pd.Dataframe
+    @Returns
+    [
+        {"center": [1800, 750], "radius": 200},
+        {"center": [1250, 1050], "radius": 25},
+        {"center": [1000, 500], "radius": 15}
+    ]
+    """
+    circular_walls = []
+    pod_locs_list = get_pod_locations(
+        fk, block, pod_locations_df
+    )
+    for pod_locs in pod_locs_list:
+        point1 = int(pod_locs['origin_x']), int(pod_locs['origin_y'])
+        point2 = int(pod_locs['end_x']), int(pod_locs['end_y'])
+        center, radius = calculate_center_and_radius(point1, point2)
+        circular_walls.append({
+            "center": center, "radius": radius
+        })
+    return circular_walls
+
+
+def get_pod_locations(
+    fk: str, block: str, pod_locations_df: pd.DataFrame
+) -> list:
+    """
+    Given a definition of a pods-location environment-variable, which specifies
+    the path of a csv-file, and the current fishkey, this method resolves the
+    origin and end x and y positions of the pod-locations. Per individual in the
+    PE-Experiment, 3 pods are used: a small, medium and large one. 
+    This method returns a dataframe for every position
+
+    @params
+    fk: str, ex. '23442333_front'
+    block: str, ex. 'block1'
+    pod_locations_df: pd.Dataframe
+    @Returns
+    [
+        pd.DataFrame[s_xorigin, s_yorigin, s_xend, s_yend],
+        pd.DataFrame[m_xorigin, m_yorigin, m_xend, m_yend]
+        pd.DataFrame[l_xorigin, l_yorigin, l_xend, l_yend]
+    ]
+    """
+    cam_id, compartment = fk.split('_')
+    number_pattern = r'\d+'
+    block_nr = re.search(number_pattern, block).group()
+    
+    rel_pod_locations = pod_locations_df[
+        (
+            pod_locations_df['block'] == int(block_nr)) & (
+                pod_locations_df['camera_id'] == int(cam_id)) & (
+                    pod_locations_df['front_or_back'].str.startswith(
+                        compartment, na=False))
+    ]
+    small_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'small'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    medium_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'medium'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    large_loc_df = rel_pod_locations[rel_pod_locations['pot_size'] == 'large'][['origin_x', 'origin_y', 'end_x', 'end_y']]
+    return small_loc_df, medium_loc_df, large_loc_df
+
+
+def calculate_center_and_radius(point1, point2):
+    # Normalization
+    x1 = min(point1[0], point2[0])
+    y1 = min(point1[1], point2[1])
+    x2 = max(point1[0], point2[0])
+    y2 = max(point1[1], point2[1])
+    # center
+    x_c = (x1 + x2) / 2
+    y_c = (y1 + y2) / 2
+
+    d = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)  # diagonal
+    r = d / 2  # radius
+    return (x_c, y_c), r
+
+
+def mirror_data_for_back_compartment(
+    data: np.array, new_area: np.array, np_centers: np.array
+) -> list:
+    # Mirror
+    # find mirror line
+    original_data_shape = data.shape
+    data = np.vstack((data, new_area, np_centers))  # append area to mirror it as well
+    long_edge_midpoint = (new_area[1] + new_area[2]) / 2
+    mirror_line_slope = (long_edge_midpoint[1] - new_area[-1, 1]) / (
+        long_edge_midpoint[0] - new_area[-1, 0]
+    )
+    mirror_line_intercept = new_area[-1, 1] - (
+        mirror_line_slope * new_area[-1, 0]
+    )
+    # find line perpendicular to mirror line for each point
+    orthogonal_mirror_line_slope = -1 / mirror_line_slope
+    orthogonal_mirror_line_intercept = (
+        data[:, 1] - orthogonal_mirror_line_slope * data[:, 0]
+    )
+    # find intersection of 2 lines for each point
+    intersections_x = (
+        orthogonal_mirror_line_intercept - mirror_line_intercept) / (
+        mirror_line_slope - orthogonal_mirror_line_slope
+    )
+    intersections_y = (
+        mirror_line_slope * orthogonal_mirror_line_intercept
+        - orthogonal_mirror_line_slope * mirror_line_intercept
+    ) / (mirror_line_slope - orthogonal_mirror_line_slope)
+    # find mirror image of each point equidistant from intersection
+    mirrored_data_x = 2 * intersections_x - data[:, 0]
+    mirrored_data_y = 2 * intersections_y - data[:, 1]
+    mirrored_data = np.vstack((mirrored_data_x, mirrored_data_y)).T
+
+    data = mirrored_data[:original_data_shape[0]]
+    new_area = mirrored_data[original_data_shape[0]: -np_centers.shape[0]]
+    new_center = mirrored_data[data.shape[0] + new_area.shape[0]:]
+    return data, new_area, new_center
 
 
 def get_error_indices(dataframe):
