@@ -7,10 +7,20 @@ from downstream_analyses.plasticity import (
     plasticity_for_file
 )
 from downstream_analyses.cov_entropy_tables import unified_table_flow
+import wandb
+
+
+def init_wandb(params):
+    wandb.init(
+        project="fishcluster_toolbox",
+        config=params
+    )
 
 
 if __name__ == "__main__":
     parameters = set_parameters()
+    if parameters.wandb_key:
+        init_wandb(parameters)
     fks = get_individuals_keys(parameters)
     cluster_sizes_list = parameters.kmeans_list
     print('---CALCULATING ENTROPY AND COEFFICIENT OF VARIATION---')
@@ -43,7 +53,6 @@ if __name__ == "__main__":
             fig = plasticity_for_file(f, effect)
 
     print('---CREATING TABLES FOR COEFFICIENT OF VARIATION AND ENTROPY---')
-    raw_data_path = parameters.projectPath
     cluster_sizes_str_list = [str(num).zfill(3) for num in cluster_sizes_list]
     metadata_path = parameters.projectPath + \
         '/FE_Metadata_for_Entropy_models.xlsx'
@@ -58,8 +67,10 @@ if __name__ == "__main__":
             time_constraint=time_str,
             cluster_sizes=cluster_sizes_str_list,
             clustering_methods=['kmeans', 'umap'],
-            raw_data_path=raw_data_path,
             metadata_path=metadata_path,
             discard_nan_rows=True,
             output_file_name=output_file_name
         )
+
+    if parameters.wandb_key:
+        wandb.finish()
