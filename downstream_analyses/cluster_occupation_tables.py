@@ -5,11 +5,19 @@ import glob
 import hdf5storage
 import pandas as pd
 from tqdm import tqdm
+import wandb
 
 from utils.utils import (
     get_individuals_keys,
     set_parameters,
 )
+
+
+def init_wandb(params):
+    wandb.init(
+        project="fishcluster_toolbox",
+        config=params
+    )
 
 
 def load_projections_for_all_ind(parameters):
@@ -148,6 +156,8 @@ def merge_data_and_write_to_csv(parameters, ind_list, wshed_list, metadata_df):
 
 if __name__ == "__main__":
     parameters = set_parameters()
+    if parameters.wandb_key:
+        init_wandb(parameters)
     ind_list = load_projections_for_all_ind(parameters)
     wshed_list = load_wshed_cluster_occ_for_all_ind(parameters)
     metadata_df = load_meta_data_df(parameters)
@@ -157,3 +167,5 @@ if __name__ == "__main__":
         wshed_list=wshed_list,
         metadata_df=metadata_df
     )
+    if parameters.wandb_key:
+        wandb.finish()
