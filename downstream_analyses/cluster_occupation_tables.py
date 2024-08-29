@@ -62,7 +62,7 @@ def load_wshed_cluster_occ_for_all_ind(parameters):
     cluster_size_list = parameters.kmeans_list
     for cluster_size in tqdm(cluster_size_list, total=len(cluster_size_list), desc='Loading Wshed Clusters'):
         # print(f'cluster size: {cluster_size}')
-        wshed_path = f'{parameters.projectPath}/UMAP/zVals_wShed_groups_{cluster_size}.mat'
+        wshed_path = f'{parameters.projectPath}/Models/zVals_wShed_groups_{cluster_size}.mat'
         wshedfile = hdf5storage.loadmat(wshed_path)
         if cluster_size == cluster_size_list[0]:
             first_cluster_run = True
