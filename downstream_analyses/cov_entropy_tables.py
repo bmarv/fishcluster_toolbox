@@ -365,7 +365,7 @@ def extract_and_store_relevant_dates(
                     compartment_list.append(block_el)
             id_list = []
             for comp_el in compartment_list:
-                curr_id = (re.search(id_pattern, comp_el)).group(1)
+                curr_id = (re.search(id_pattern, comp_el.split('/')[-1])).group(1)
                 # get all individual names
                 if curr_id not in id_list:
                     id_list.append(curr_id)
@@ -375,7 +375,7 @@ def extract_and_store_relevant_dates(
                 # get filtered individual list
                 individual_list = []
                 for comp_el2 in compartment_list:
-                    if (re.search(id_pattern, comp_el2)).group(1) == curr_ind:
+                    if (re.search(id_pattern, comp_el2.split('/')[-1])).group(1) == curr_ind:
                         individual_list.append(comp_el2)
                 date_list = []
                 for date_el_p_ind in individual_list:

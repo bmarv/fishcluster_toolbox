@@ -67,6 +67,7 @@ if __name__ == "__main__":
             time_constraint=time_str,
             cluster_sizes=cluster_sizes_str_list,
             clustering_methods=['kmeans', 'umap'],
+            projections_data_path=parameters.projectPath,
             metadata_path=metadata_path,
             discard_nan_rows=True,
             output_file_name=output_file_name
