@@ -55,3 +55,8 @@ threads_cpu = int(os.environ.get("THREADS_CPU"))
 
 # Weights-and-biases resource tracking
 wandb_key = os.environ.get("WANDB_API_KEY")
+
+# Database Management
+DATABASE_NAME = os.environ.get("DATABASE_NAME") # Name given to cluster occupancy database
+PASSWORD = os.environ.get("PASSWORD") # MySQL connection password
+CLUSTER_OCCUPANCY_DIR = os.environ.get("CLUSTER_OCCUPANCY_DIR") # path to cluster occupancy data on external hard drive
