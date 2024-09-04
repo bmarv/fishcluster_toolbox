@@ -135,6 +135,27 @@ Obtaining the data and creating the tables for further analyses on the values fo
 python -m downstream_analyses
 ```
 
+## Cluster Occupancy Database:
+The complete cluster occupancy dataset can be seeded and queried through `utils/cluster_occupancy_dbm.py` which integrates with MySQL. For the first usage, if the dataset is still not seeded, MySQL has to be configured, after installation, through System Settings to point to the `cluster_occupancy` directory, which can be on an external drive and contains the generated ";"-delimited CSV files. For python support, it is important to make sure `mysql-connector-python` is also installed in your virtual environment. The database can then be seeded by setting appropriate arguments to the initialization of the interface class in `utils/cluster_occupancy_dbm.py`. To seed the MySQL database outside of python, run:
+
+```bash
+utils/create_load_cluster_occupancy_db.command [Dataset Name] [/PATH/TO/DRIVE/WITH/cluster_occupancy/] [MySQL Connection Password]
+```
+
+The `utils/cluster_occupancy_dbm.py` interface can then be used to query the existing database. A sample usage, which is set to seed the database from scratch and run a simple query, can be called via:
+
+```bash
+python -m utils.cluster_occupancy_dbm
+```
+
+after specifying the following three `config.env` variables:
+
+```python
+DATABASE_NAME="Database Name"
+CLUSTER_OCCUPANCY_DIR="/PAT/TO/DRIVE/WITH/cluster_occupancy/"
+PASSWORD="Your Password"
+```
+
 ---
 ## References:
 ###### [1] Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf M. Developmental arcs of plasticity in whole movement repertoires of a clonal fish. bioRxiv. 2023:2023-12.
