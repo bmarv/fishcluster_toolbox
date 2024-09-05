@@ -4,6 +4,7 @@ DROP DATABASE IF EXISTS `%database_name%`;
 -- Create the new database for the cluster occupancies
 CREATE DATABASE `%database_name%`;
 USE `%database_name%`;
+SET GLOBAL local_infile=ON;
 
 -- Create table for cluster occupancies
 CREATE TABLE cluster_occupancies (

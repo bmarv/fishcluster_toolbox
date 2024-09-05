@@ -58,5 +58,5 @@ wandb_key = os.environ.get("WANDB_API_KEY")
 
 # Database Management
 DATABASE_NAME = os.environ.get("DATABASE_NAME") # Name given to cluster occupancy database
-PASSWORD = os.environ.get("PASSWORD") # MySQL connection password
-CLUSTER_OCCUPANCY_DIR = os.environ.get("CLUSTER_OCCUPANCY_DIR") # path to cluster occupancy data on external hard drive
+PASSWORD = os.environ.get("PASSWORD") # MySQL root connection password
+MYSQL_PATH = os.environ.get("MYSQL_PATH") # path of the mysql installation (e.g. /usr/local/mysql/bin/mysql)

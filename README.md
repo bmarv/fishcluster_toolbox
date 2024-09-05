@@ -135,26 +135,38 @@ Obtaining the data and creating the tables for further analyses on the values fo
 python -m downstream_analyses
 ```
 
-## Cluster Occupancy Database:
-The complete cluster occupancy dataset can be seeded and queried through `utils/cluster_occupancy_dbm.py` which integrates with MySQL. For the first usage, if the dataset is still not seeded, MySQL has to be configured, after installation, through System Settings to point to the `cluster_occupancy` directory, which can be on an external drive and contains the generated ";"-delimited CSV files. For python support, it is important to make sure `mysql-connector-python` is also installed in your virtual environment. The database can then be seeded by setting appropriate arguments to the initialization of the interface class in `utils/cluster_occupancy_dbm.py`. To seed the MySQL database outside of python, run:
-
+### Cluster Occupation Analyses
+After training the dataset, tables for cluster occupation analyses can be created by running the respective python module. Please note, that for the creation of the tables, a metadata excel-sheet of name `PE_spreadsheet_Stand_21Sep2023.xlsx` is required in the project directory, which includes a sheet called 'earlyB_spreadsheet' with further information on the underlying data.
+Creating the csv-tables is possible by running the following module:
 ```bash
-utils/create_load_cluster_occupancy_db.command [Dataset Name] [/PATH/TO/DRIVE/WITH/cluster_occupancy/] [MySQL Connection Password]
+python -m downstream_analyses.cluster_occupation_tables
 ```
 
-The `utils/cluster_occupancy_dbm.py` interface can then be used to query the existing database. A sample usage, which is set to seed the database from scratch and run a simple query, can be called via:
+#### Database Integration:
+For a feasible integration and usage of the data on end-devices, the cluster occupation tables can be integrated into a MySQL database. 
+The complete cluster occupancy dataset can be seeded and queried through the `downstream_analyses/cluster_occupancy_dbm.py` script which integrates with MySQL.
+Make sure to have an active running local database server session of MySQL by running the following before connection to the server.
+```bash
+mysql.server start
+```
+The database can then be seeded by setting appropriate arguments to the initialization of the interface class in `downstream_analyses/cluster_occupancy_dbm.py`. To seed the MySQL database outside of python, run:
 
 ```bash
-python -m utils.cluster_occupancy_dbm
+utils/create_load_cluster_occupancy_db.command [Dataset Name] [/PATH/TO/DRIVE/WITH/cluster_occupancy/] [MySQL Root Password] [MySQL binary path]
 ```
 
-after specifying the following three `config.env` variables:
-
+The `utils/cluster_occupancy_dbm.py` interface can then be used to query create and seed the database from scratch after specifying the following three `config.env` variables:
 ```python
 DATABASE_NAME="Database Name"
-CLUSTER_OCCUPANCY_DIR="/PAT/TO/DRIVE/WITH/cluster_occupancy/"
-PASSWORD="Your Password"
+PASSWORD="MySQL root password"
+MYSQL_PATH="path/to/your/mysql/bin/mysql"
 ```
+by calling the following python module:
+
+```bash
+python -m downstream_analyses.cluster_occupancy_dbm
+```
+
 
 ---
 ## References:

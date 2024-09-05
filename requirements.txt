@@ -5,6 +5,7 @@ h5py==3.8.0
 hdf5storage==0.1.19
 matplotlib==3.8.3
 moviepy==1.0.3
+mysql-connector-python==9.0.0
 numpy==1.23.5
 openpyxl==3.1.2
 pandas==1.5.3
