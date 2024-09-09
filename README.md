@@ -2,13 +2,13 @@
 <p align="center">
     <figure>
     <img src="./misc/UMAP_Entropy.gif" />
-    <figcaption>Low and high Entropy Individuals in physical and behavioural UMAP-Space.</figcaption>
+    <figcaption>Low and high Entropy Individuals in physical and behavioural UMAP-Space (Supplementary Movie 5.1 in manuscript).</figcaption>
     </figure>
 </p>
 
 --- 
 
-This repository provides a comprehensive set of tools for conducting behavioural analyses on timeseries data. It includes unsupervised machine learning algorithms for embedding and inferencing using UMAP and K-Means. Clustering clustering enables data for downstream analyses regarding entropy measures.
+This repository provides a comprehensive set of tools for conducting behavioural analyses on timeseries of 2-D, x-y coordinate (i.e., movement) data. It includes unsupervised machine learning algorithms for embedding and inferencing using UMAP and K-Means. Unsupervised clustering is used to classify behaviors and calculate the degree of 'Shannon entropy' in behavioral space as a measure of behavioral diversity.
 
 
 $\Rightarrow$ paper: [Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf M. Developmental arcs of plasticity in whole movement repertoires of a clonal fish. bioRxiv. 2023:2023-12.](https://www.biorxiv.org/content/10.1101/2023.12.07.570540v1) \
@@ -94,24 +94,24 @@ After training, the embedding-models are stored in the `./Models/` directory of 
 The raw dataset after processing from Biotracker consists of multiple blocks with their respective front or back compartments. Every compartment includes footage from multiple cameras annotated by their camera-id for multiple days. Each day then has 15 batches of footage, where the timepoint and the corresponding x- and y-positions are stored. 
 
 #### Published Dataset
-Our published dataset is accessible under [the following link](#5-todo-insert-dataset-link) and includes already cleaned and preprocessed  data. For every individual, indicated by _block-cameraid-compartment_, one file exists for every experimental-day in a .mat format. 
+Our published dataset is accessible under [the following link](#5-todo-insert-dataset-link) and includes already cleaned and preprocessed data. For every individual, indicated by _block-cameraid-compartment_, one file exists for every experimental-day in a .mat format. 
 The included features for this timeseries are:
 * X-Y Coordinates: The spatial positions of each fish are recorded over time, providing insights into their movement patterns within the experimental environment.
 * Step-Length: Information on the distance covered by each fish per time step, offering a quantifiable measure of its activity.
-* Turning-Angle: The angles at which the fish change direction, allowing for the analysis of navigation and exploration behaviors.
+* Turning-Angle: The angles at which the fish change direction from an initial heading (i.e. previous timestep), allowing for the analysis of navigation and path tortuosity.
 * Distance-to-the-Wall: The proximity of each fish to the enclosure walls, providing context on habitat preferences and spatial utilization. 
 
 Further information can be found at [insert link](!todo).
 
 ### Preprocessing
-To ensure data quality, normalization procedures were implemented to standardize the data and account for variations in tank compartments across all individuals. We exclude days with missing trajectories from our analysis. Additionally, we only consider data points that are within the defined area. Data points that are identified as dirt points are excluded, as well as data for less than 1000 datapoints per day to ensure sufficient data for analysis.
+To ensure data quality and account for differential feature scaling, all data were normalized. We exclude days with missing trajectories from our analysis. Additionally, we only consider datapoints that are within the defined tank area. Datapoints that are identified as erroneous points are excluded, as was a given day's data for which less than 1000 datapoints per day were observed (most days have ~140k datapoints per individual), ensuring sufficient data for analysis.
 
-For calculations of the features, we calculate the step size by measuring the Euclidean distance between two consecutive data points and converting it from pixels to centimeters. We use a window size of 2 data points.
-The turning angle is calculated using the arctan function with the perpendicular and base lengths of a triangle formed by three consecutive data points. 
-The distance to the wall measures the Euclidean distance between a data point and the nearest wall, and converting it from pixels to centimeters. We use a window size of 1 data point.
+For calculations of the features, we calculate the step size by measuring the Euclidean distance between two consecutive datapoints and converting it from pixels to centimeters. We use a window size of 2 datapoints.
+The turning angle is calculated using the arctan function with the perpendicular and base lengths of a triangle formed by three consecutive x-y datapoints. 
+The distance to the wall measures the Euclidean distance between a datapoint and the nearest wall, converted from pixels to centimeters. We use a window size of 1 datapoint.
 
 ### Embedding and Inferencing
-In the training preprocessing stage, we perform normalization and apply the Morelet wavelet transformation [[8]](#8-b-cazelles-et-al-wavelet-analysis-of-ecological-time-series-oecologia-156-287304-2008) to the data. This transformation results in 75 features, obtained by combining the 3 original features with 25 frequencies. Additionally, we use subsampling techniques. 
+In the training preprocessing stage, we perform normalization and apply a Morelet wavelet transform [[8]](#8-b-cazelles-et-al-wavelet-analysis-of-ecological-time-series-oecologia-156-287304-2008) to the data, with 25 distinct frequencies. Applied to timeseries of the original three features (step length, turning angle, and distance to the all), this results in timeseries of 75 features. Additionally, we use subsampling techniques. 
 
 Embedding and Inferencing is done with both UMAP and K-Means.
 
@@ -125,7 +125,7 @@ on the inverse of that density space.
 For some of these processes, we utilize the [motionmapperpy](https://github.com/bermanlabemory/motionmapperpy) implementation based on the work by Berman et al. [[3]](#3-berman-gordon-j-et-al-mapping-the-stereotyped-behaviour-of-freely-moving-fruit-flies-journal-of-the-royal-society-interface-1199-2014-20140672).
 
 ## Downstream Analyses
-After training and obtaining the cluster-regions for both K-Means and UMAP, it is possible to compute the Coefficient of Variation (CoV) for the three original features and Entropy for the cluster-regions as a measure for changes in the Plasticity of an Individual. 
+After training and obtaining the cluster-regions for both K-Means and UMAP, it is possible to compute the Coefficient of Variation (CoV) for the three original features and Entropy for the cluster-regions as a measure for changes in the plasticity or behavioral diversity of an individual. 
 Obtaining the data and creating the tables for further analyses on the values for CoV and Entropy can be done by running the [downstream_analyses module](./downstream_analyses/) with the following command, for this to function, a Metadata-file has to be located at the directory of the original dataset:
 ```bash
 python -m downstream_analyses
