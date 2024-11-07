@@ -51,22 +51,42 @@ class ClusterOccupancyDBInterface:
             print(result.stdout)
             print(result.stderr)
 
-    def select_from_db(
-        self, columns: List[str], conditions: Dict[str, List[str]] = None
+    def select_from_db(self,
+                       columns: List[str] = None,
+                       matches: Dict[str, List[str]] = None,
+                       filters: List[str] = None,
+                       sample: int = None,
+                       group_by: List[str] = None,
+                       query: str = None
     ) -> pd.DataFrame:
         try:
             cursor = self.conn.cursor()
-
-            query = f"SELECT {', '.join(columns)} FROM cluster_occupancies"
-            if conditions is not None:
+            if query is None:
+                query = f"SELECT {', '.join(columns)} FROM cluster_occupancies"
                 first = True
-                for column, values in conditions.items():
-                    to_match = "', '".join(values)
-                    if first:
-                        query += f" WHERE {column} IN ('{to_match}')"
-                        first = False
-                    else:
-                        query += f" AND {column} IN ('{to_match}')"
+
+                if matches is not None:
+                    for column, values in matches.items():
+                        to_match = "', '".join(values)
+                        if first:
+                            query += f" WHERE {column} IN ('{to_match}')"
+                            first = False
+                        else:
+                            query += f" AND {column} IN ('{to_match}')"
+
+                if filters is not None:
+                    for filter in filters:
+                        if first:
+                            query += f" WHERE {filter}"
+                            first = False
+                        else:
+                            query += f" AND {filter}"
+
+                if sample is not None:
+                    query += f" ORDER BY RAND( ) LIMIT {sample}"
+
+                if group_by is not None:
+                    query += f" GROUP BY {', '.join(group_by)}"
 
             print("=======\nExecuting query: \n" + query)
             cursor.execute(query)
