@@ -6,9 +6,12 @@ hdf5storage==0.1.19
 matplotlib==3.8.3
 moviepy==1.0.3
 mysql-connector-python==9.0.0
+networkx==3.2.1
 numpy==1.23.5
 openpyxl==3.1.2
 pandas==1.5.3
+pyvis==0.3.2
+PyMySQL==1.1.1
 scikit-image==0.20.0
 scipy==1.8.0
 tqdm==4.65.0

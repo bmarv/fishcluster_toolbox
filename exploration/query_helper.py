@@ -48,7 +48,7 @@ def query_transitions(
         SELECT
             df_time_index,
             row_id,
-            cluster_region_5
+            cluster_region_{cluster_size}
         FROM
             {DB_TABLE_NAME}
         WHERE

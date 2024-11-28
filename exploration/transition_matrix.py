@@ -20,7 +20,6 @@ def create_transitions(input_file, cluster_size, output_file):
         if pd.isna(row[f"cluster_region_{cluster_size}"]):
             continue
         if previous_cluster is not None and previous_cluster != 0:
-            # Update the transition matrix
             transition_matrix[int(previous_cluster) - 1, int(current_cluster) - 1] += 1
         previous_cluster = current_cluster
 
