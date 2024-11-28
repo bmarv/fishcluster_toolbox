@@ -1,7 +1,12 @@
+import pandas as pd
 import numpy as np
 import config
 from processing.processing_methods import distance_to_wall_chunk, calc_steps
+from utils.processing_utils import get_center_radius_for_pods
 from processing.processing_transformation import px2cm
+import os
+
+POD_LOCATION_DF = pd.read_csv(config.POD_LOC_CSV, sep=',')
 
 
 def all_error_filters(data, area_tuple, **kwargs):
@@ -26,12 +31,7 @@ def error_default_points(data):
     return ((x == -1) & (y == -1)) | ((x == 0) & (y == 0)) | nan_filter
 
 
-def error_dirt_points(
-    data,
-    threshold=config.DIRT_THRESHOLD,
-    fish_key="",
-    day=""
-):
+def error_dirt_points(data, threshold=config.DIRT_THRESHOLD, fish_key="", day=""):
     """
     @params:    data -- numpy array with x,y coordinates
                 threshold -- number of data frames that are sequentially
@@ -42,6 +42,13 @@ def error_dirt_points(
     flt = np.zeros(data.shape[0], dtype=bool)
     indexer = np.argwhere(np.diff(bool_array)).squeeze()
     start = 0
+
+    error_file_parent_dir = os.path.dirname(config.err_file)
+    if not os.path.exists(error_file_parent_dir):
+        os.makedirs(error_file_parent_dir)
+    with open(config.err_file, "w"):
+        pass
+
     for end in [*(indexer + 2), data.shape[0]]:
         if (
             bool_array[start] and (end - start) > threshold
@@ -53,11 +60,11 @@ def error_dirt_points(
             if ~(((x == -1) & (y == -1)) | ((x == 0) & (y == 0))):
                 msg_spike_s, msg_spike_e = "", ""
                 if start > 0:
-                    spike_s = calc_steps(data[start - 1: start + 1])[0]
+                    spike_s = calc_steps(data[start - 1 : start + 1])[0]
                     if px2cm(spike_s) > config.SPIKE_THRESHOLD:
                         msg_spike_s = "SPIKE START"
                 if end < data.shape[0]:
-                    spike_e = calc_steps(data[end - 1: end + 1])[0]
+                    spike_e = calc_steps(data[end - 1 : end + 1])[0]
                     if px2cm(spike_e) > config.SPIKE_THRESHOLD:
                         msg_spike_e = "SPIKE END"
                 print(
@@ -121,6 +128,7 @@ def error_points_out_of_area(data, area_tuple, day=""):
     """returns a boolean np.array, where true indicates whether
     the corresponding datapoint is on the wrong side of the tank"""
     key, area = area_tuple
+    circular_walls = get_center_radius_for_pods(key, config.BLOCK, POD_LOCATION_DF)
     is_back = config.BACK in key  # key in the shape of <<camera>>_<<position>>
     error_out_of_range = error_points_out_of_range(data, area_tuple)
     # over the diagonal
@@ -140,7 +148,9 @@ def error_points_out_of_area(data, area_tuple, day=""):
     error_non_default = error_filter & ~err_default
     error_non_default[error_non_default] = (
         distance_to_wall_chunk(
-            data[error_non_default], area
+            data[error_non_default],
+            area,
+            circular_walls
         ) > config.THRESHOLD_AREA_PX
     )  # in pixels
     error_non_default = error_non_default | (error_out_of_range & ~err_default)
