@@ -51,13 +51,14 @@ class ClusterOccupancyDBInterface:
             print(result.stdout)
             print(result.stderr)
 
-    def select_from_db(self,
-                       columns: List[str] = None,
-                       matches: Dict[str, List[str]] = None,
-                       filters: List[str] = None,
-                       sample: int = None,
-                       group_by: List[str] = None,
-                       query: str = None
+    def select_from_db(
+        self,
+        columns: List[str] = None,
+        matches: Dict[str, List[str]] = None,
+        filters: List[str] = None,
+        sample: int = None,
+        group_by: List[str] = None,
+        query: str = None,
     ) -> pd.DataFrame:
         try:
             cursor = self.conn.cursor()
@@ -92,7 +93,9 @@ class ClusterOccupancyDBInterface:
             cursor.execute(query)
             result = cursor.fetchall()
             cursor.close()
-            return pd.DataFrame(result, columns=columns)
+            res_df = pd.DataFrame(result, columns=columns)
+            del result
+            return res_df
 
         except Error as err:
             print("Error message: " + err.msg)
