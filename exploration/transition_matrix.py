@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import pandas as pd
-import numpy as np
 from scipy.stats import pearsonr
 import os
 import re
+from matplotlib.backends.backend_pdf import PdfPages
 
 import exploration.query_helper as query_helper
+import exploration.visualization as visualization
 
 
 def create_transitions(input_file, cluster_size, output_file):
@@ -32,6 +32,11 @@ def create_transitions(input_file, cluster_size, output_file):
     )
     transition_matrix_df.to_csv(output_file, index=True)
     del data, transition_matrix, transition_matrix_df
+
+
+def return_stochastic_matrix_from_transition_matrix(transition_matrix, epsilon=1e-10):
+    smoothed = transition_matrix + epsilon  # Add small value to avoid division by zero
+    return smoothed * 100 / smoothed.sum(axis=1, keepdims=True)
 
 
 def queries_for_transition_matrices_f_all(output_dir):
@@ -66,7 +71,7 @@ def process_files_for_transition_matrix(
         match = re.match(pattern, file_name)
         if match:
             cluster_size = int(match.group(1))
-            treatment = match.group(2).capitalize()
+            treatment = match.group(2)
             day_start = match.group(3)
             day_end = match.group(4)
             output_file = (
@@ -78,3 +83,43 @@ def process_files_for_transition_matrix(
             create_transitions(
                 os.path.join(input_directory, file_name), cluster_size, output_file
             )
+
+    pattern = (
+        r"pe_cluster_(\d+)_(control|predator)_days_(\d+)_to(\d+)_transition_matrix\.csv"
+    )
+    output_dir = os.path.join(output_dir_transition_matrices, "plots")
+    os.makedirs(output_dir, exist_ok=True)
+
+    for file_name in tqdm(
+        os.listdir(output_dir_transition_matrices), desc="Creating Transition PDFs"
+    ):
+        match = re.match(pattern, file_name)
+        if match:
+            cluster_size = int(match.group(1))
+            treatment = match.group(2).capitalize()
+            day_start = match.group(3)
+            day_end = match.group(4)
+
+            # Read the transition matrix from the file
+            file_path = os.path.join(output_dir_transition_matrices, file_name)
+            df = pd.read_csv(file_path, index_col=0)
+            transition_matrix = df.values
+            output_pdf_path = os.path.join(
+                output_dir, os.path.splitext(file_name)[0] + "_visualization.pdf"
+            )
+            # Create PDF
+            with PdfPages(output_pdf_path) as pdf:
+                # Absolute values plot
+                absolute_title = f"Cluster Size {cluster_size} - {treatment} - Days {day_start} to {day_end} (Absolute Values)"
+                visualization.matrix_to_network_pdf(
+                    transition_matrix, absolute_title, pdf, use_percentage=False
+                )
+
+                # Percentage values plot
+                percentage_title = f"Cluster Size {cluster_size} - {treatment} - Days {day_start} to {day_end} (Percentages)"
+                transition_matrix = return_stochastic_matrix_from_transition_matrix(
+                    transition_matrix
+                )
+                visualization.matrix_to_network_pdf(
+                    transition_matrix, percentage_title, pdf, use_percentage=True
+                )
