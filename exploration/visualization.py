@@ -10,6 +10,40 @@ from pyvis.network import Network
 import matplotlib.colors as mcolors
 
 
+def plot_cluster_counts_f_cluster_size_treatment(
+    input_dir, cluster_counts, treatment, cluster_size
+):
+    plt.figure(figsize=(12, 8))
+    for cluster in cluster_counts.columns:
+        plt.plot(
+            cluster_counts.index,
+            cluster_counts[cluster],
+            marker="o",
+            label=cluster,
+        )
+    plt.title(
+        f"Progression of Cluster Visits ({treatment} Group, Max Cluster Size = {cluster_size})"
+    )
+    plt.xlabel("Timeframes")
+    plt.ylabel("Visit Counts")
+    plt.xticks(rotation=45)
+    plt.ticklabel_format(style="plain", axis="y")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    output_dir_path = os.path.join(
+        input_dir,
+        "cluster_visits_p_phase",
+    )
+    os.makedirs(output_dir_path, exist_ok=True)
+    plt.savefig(
+        os.path.join(
+            output_dir_path,
+            f"visits_cluster_size_{cluster_size}_treatment_{treatment}.pdf",
+        )
+    )
+
+
 def significance_stars(p_value):
     if p_value < 0.001:
         return "***"
