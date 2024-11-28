@@ -1,11 +1,12 @@
 import pandas as pd
-import os
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 from scipy.stats import pearsonr
+from pyvis.network import Network
+import matplotlib.colors as mcolors
 
 
 def significance_stars(p_value):
@@ -247,3 +248,239 @@ def matrix_to_network_pdf(transition_matrix, title, output_pdf, use_percentage=F
     )
     output_pdf.savefig()
     plt.close()
+
+
+def inject_highlight_functionality(html_file, title, pdf_file_path):
+    """
+    Injects custom JavaScript for highlight/reset functionality into the Pyvis HTML file.
+    """
+    js_code = """
+  <script type="text/javascript">
+      var clickedNode = null;
+
+      // Save the original colors when the network is first initialized
+      network.on("beforeDrawing", function () {
+          network.body.data.nodes.get().forEach(function (node) {
+              if (!node.originalColor) {
+                  network.body.data.nodes.update({ id: node.id, originalColor: node.color });
+              }
+          });
+
+          network.body.data.edges.get().forEach(function (edge) {
+              if (!edge.originalColor) {
+                  network.body.data.edges.update({
+                      id: edge.id,
+                      originalColor: edge.color,
+                      originalFontColor: edge.font ? edge.font.color : "#000000"
+                  });
+              }
+          });
+      });
+
+      network.on("click", function (params) {
+          if (params.nodes.length > 0) {
+              let nodeId = params.nodes[0];
+              if (clickedNode === nodeId) {
+                  // Reset mode: Restore original colors
+                  clickedNode = null;
+                  network.body.data.nodes.update(
+                      network.body.data.nodes.get().map(node => ({
+                          id: node.id,
+                          color: node.originalColor
+                      }))
+                  );
+                  network.body.data.edges.update(
+                      network.body.data.edges.get().map(edge => ({
+                          id: edge.id,
+                          color: edge.originalColor,
+                          font: { color: edge.originalFontColor }
+                      }))
+                  );
+              } else {
+                  // Highlight mode: Dim unrelated nodes and edges
+                  clickedNode = nodeId;
+                  let connectedEdges = network.getConnectedEdges(nodeId);
+                  let connectedNodes = network.getConnectedNodes(nodeId);
+
+                  // Update nodes
+                  network.body.data.nodes.update(
+                      network.body.data.nodes.get().map(node => ({
+                          id: node.id,
+                          color: connectedNodes.includes(node.id) || node.id === nodeId
+                              ? node.originalColor
+                              : "lightgrey"
+                      }))
+                  );
+
+                  // Update edges
+                  network.body.data.edges.update(
+                      network.body.data.edges.get().map(edge => ({
+                          id: edge.id,
+                          color: connectedEdges.includes(edge.id)
+                              ? edge.originalColor
+                              : "lightgrey",
+                          font: { color: connectedEdges.includes(edge.id)
+                              ? edge.originalFontColor
+                              : "lightgrey" }
+                      }))
+                  );
+              }
+          }
+      });
+  </script>
+  """
+
+    # HTML code to embed the PDF
+    pdf_embed_code = f"""
+    <div style="margin-top: 20px;">
+        <iframe 
+            src="{pdf_file_path}" 
+            style="width: 100%; height: 800px; border: none;">
+        </iframe>
+    </div>
+    """
+    heading_code = f"<h1>{title}</h1>"
+
+    # Read the original HTML
+    with open(html_file, "r") as file:
+        html_content = file.read()
+
+    # Inject the JavaScript before the closing </body> tag
+    updated_html = html_content.replace(
+        "</body>", heading_code + js_code + pdf_embed_code + "</body>"
+    )
+
+    # Save the updated HTML
+    with open(html_file, "w") as file:
+        file.write(updated_html)
+
+
+def matrix_to_transition_html(
+    transition_matrix,
+    title_heading,
+    output_html_path,
+    pdf_file_path,
+    use_percentage=False,
+):
+    """
+    Create an interactive visualization of the transition matrix.
+
+    Args:
+        transition_matrix (np.ndarray): Transition matrix to visualize.
+        title_heading (str): Title for the interactive visualization.
+        output_html_path (str): Path to save the HTML output.
+        pdf_file_path (str): Path for embedding a pdf-file with meta info
+        use_percentage (bool): If True, display percentages; otherwise, use absolute values.
+    """
+    # Number of clusters
+    num_clusters = transition_matrix.shape[0]
+
+    # # Normalize the matrix for percentages if required
+    # if use_percentage:
+    #     row_sums = np.sum(transition_matrix, axis=1, keepdims=True)
+    #     with np.errstate(
+    #         divide="ignore", invalid="ignore"
+    #     ):  # Ignore divide-by-zero warnings
+    #         transition_matrix = np.nan_to_num(
+    #             (transition_matrix.T / row_sums.T).T * 100
+    #         )
+
+    net = Network(height="800px", width="100%", notebook=True, directed=True)
+
+    # Adjust physics dynamically for larger networks
+    if num_clusters <= 10:
+        node_distance = 300
+        spring_length = 400
+        spring_constant = 0.05
+    elif num_clusters <= 20:
+        node_distance = 500
+        spring_length = 600
+        spring_constant = 0.03
+    else:
+        node_distance = 700
+        spring_length = 800
+        spring_constant = 0.02
+
+    net.set_options(
+        f"""
+    {{
+      "physics": {{
+        "repulsion": {{
+          "nodeDistance": {node_distance},
+          "springLength": {spring_length},
+          "springConstant": {spring_constant}
+        }},
+        "minVelocity": 0.1,
+        "solver": "repulsion"
+      }},
+      "interaction": {{
+        "dragNodes": true,
+        "hover": true,
+        "navigationButtons": true,
+        "tooltipDelay": 200
+      }}
+    }}
+    """
+    )
+
+    color_palette = list(mcolors.TABLEAU_COLORS.values())
+    # nodes with proportional scaling and minimum size
+    total_visits = np.sum(transition_matrix, axis=0) + np.sum(transition_matrix, axis=1)
+    min_size = 15 if num_clusters > 10 else 10
+    max_size = 70 if num_clusters > 10 else 50
+
+    if use_percentage:
+        scaled_sizes = np.clip(10 + 40 * (total_visits / 100), min_size, max_size)
+    else:
+        scaled_sizes = np.clip(
+            10 + 40 * (np.log1p(total_visits) / np.log1p(np.max(total_visits))),
+            min_size,
+            max_size,
+        )
+
+    node_colors = {
+        i + 1: color_palette[i % len(color_palette)] for i in range(num_clusters)
+    }
+
+    # isolated nodes
+    connected_nodes = set()
+    for i in range(num_clusters):
+        for j in range(num_clusters):
+            if transition_matrix[i, j] > 0:
+                connected_nodes.update([i + 1, j + 1])
+
+    # Add only connected nodes
+    for i in range(num_clusters):
+        if i + 1 in connected_nodes:
+            label = f"Cluster {i+1}"
+            size = scaled_sizes[i]
+            net.add_node(
+                i + 1,
+                label=label,
+                size=size,
+                title=f"Cluster {i+1}",
+                color=node_colors[i + 1],
+            )
+
+    # edges with labels and visible arrows
+    for i in range(num_clusters):
+        for j in range(num_clusters):
+            weight = transition_matrix[i, j]
+            if weight > 0:
+                label = f"{weight:.1f}%" if use_percentage else f"{weight:.0f}"
+                title = f"{label} ({i+1}->{j+1})"
+                net.add_edge(
+                    i + 1,
+                    j + 1,
+                    value=weight,
+                    title=title,
+                    label=label,
+                    color=node_colors[j + 1],
+                    arrowsize=0.5,
+                )
+
+    html_file = f"{output_html_path}_interactive.html"
+
+    net.show(html_file)
+    # Inject JavaScript for highlight/reset with light-grey coloring + PDF embedding
+    inject_highlight_functionality(html_file, title_heading, pdf_file_path)

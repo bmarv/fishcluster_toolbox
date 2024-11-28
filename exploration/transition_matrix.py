@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from scipy.stats import pearsonr
 import os
 import re
 from matplotlib.backends.backend_pdf import PdfPages
@@ -84,7 +83,7 @@ def process_files_for_transition_matrix(
                 os.path.join(input_directory, file_name), cluster_size, output_file
             )
 
-    pattern = (
+    pattern_viz = (
         r"pe_cluster_(\d+)_(control|predator)_days_(\d+)_to(\d+)_transition_matrix\.csv"
     )
     output_dir = os.path.join(output_dir_transition_matrices, "plots")
@@ -93,7 +92,7 @@ def process_files_for_transition_matrix(
     for file_name in tqdm(
         os.listdir(output_dir_transition_matrices), desc="Creating Transition PDFs"
     ):
-        match = re.match(pattern, file_name)
+        match = re.match(pattern_viz, file_name)
         if match:
             cluster_size = int(match.group(1))
             treatment = match.group(2).capitalize()
@@ -123,3 +122,41 @@ def process_files_for_transition_matrix(
                 visualization.matrix_to_network_pdf(
                     transition_matrix, percentage_title, pdf, use_percentage=True
                 )
+
+    output_html = os.path.join(output_dir_transition_matrices, "plots")
+    os.makedirs(output_html, exist_ok=True)
+    for file_name in tqdm(
+        os.listdir(output_dir_transition_matrices), desc=" Creating Transition HTMLs"
+    ):
+        match = re.match(pattern_viz, file_name)
+        if match:
+            cluster_size = int(match.group(1))
+            treatment = match.group(2)
+            day_start = match.group(3)
+            day_end = match.group(4)
+
+            file_path = os.path.join(output_dir_transition_matrices, file_name)
+            df = pd.read_csv(file_path, index_col=0).values
+            transition_matrix = return_stochastic_matrix_from_transition_matrix(df)
+            output_html_path = os.path.join(
+                output_dir_transition_matrices, "interactive_html"
+            )
+            os.makedirs(output_html_path, exist_ok=True)
+            output_html_path = os.path.join(
+                output_html_path, os.path.splitext(file_name)[0] + "_interactive.html"
+            )
+
+            # PDF file path
+            pdf_file_path = (
+                f"../plots/{os.path.splitext(file_name)[0]}_visualization.pdf"
+            )
+
+            # Generate HTML visualization
+            title = f"Cluster Size {cluster_size} - {treatment} - Days {day_start} to {day_end}"
+            visualization.matrix_to_transition_html(
+                transition_matrix,
+                title_heading=title,
+                output_html_path=output_html_path,
+                pdf_file_path=pdf_file_path,
+                use_percentage=True,
+            )
