@@ -44,6 +44,38 @@ def plot_cluster_counts_f_cluster_size_treatment(
     )
 
 
+# Visualize normalized matrices as heatmaps
+def plot_heatmap(ax, matrix, title, cluster_labels, font_size=8):
+    sns.heatmap(
+        matrix,
+        annot=True,
+        fmt=".2%",
+        cmap="Blues",
+        ax=ax,
+        xticklabels=cluster_labels,
+        yticklabels=cluster_labels,
+        cbar=True,
+        annot_kws={"size": font_size},
+    )
+    ax.set_title(title, fontsize=10)
+
+
+# Display divergence matrices as heatmaps
+def plot_divergence_heatmap(ax, matrix, title, cluster_labels, font_size=8):
+    sns.heatmap(
+        matrix,
+        annot=True,
+        fmt=".4f",
+        cmap="Reds",
+        ax=ax,
+        xticklabels=cluster_labels,
+        yticklabels=cluster_labels,
+        cbar=True,
+        annot_kws={"size": font_size},
+    )
+    ax.set_title(title, fontsize=10)
+
+
 def significance_stars(p_value):
     if p_value < 0.001:
         return "***"
