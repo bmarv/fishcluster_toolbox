@@ -34,7 +34,7 @@ def create_transitions(input_file, cluster_size, output_file):
     del data, transition_matrix, transition_matrix_df
 
 
-def create_transition_matrices_f_all(output_dir):
+def queries_for_transition_matrices_f_all(output_dir):
     cluster_size_list = [5, 10, 20]
     treatment_list = ["control", "predator"]
     experimental_day_tuples = [(1, 7), (8, 14), (15, 21), (22, 28), (29, 35), (36, 42)]
