@@ -160,3 +160,5 @@ def process_files_for_transition_matrix(
                 pdf_file_path=pdf_file_path,
                 use_percentage=True,
             )
+
+    visualization.create_overview_html_site(output_dir_transition_matrices)

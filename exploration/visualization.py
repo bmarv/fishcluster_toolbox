@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -484,3 +485,58 @@ def matrix_to_transition_html(
     net.show(html_file)
     # Inject JavaScript for highlight/reset with light-grey coloring + PDF embedding
     inject_highlight_functionality(html_file, title_heading, pdf_file_path)
+
+
+def create_overview_html_site(path):
+    treatment_list = ["control", "predator"]
+    phases = [(1, 7), (8, 14), (15, 21), (22, 28), (29, 35), (36, 42)]
+    cluster_size_list = [5, 10, 20]
+
+    html_content = """<!DOCTYPE html>
+    <html>
+    <head>
+        <title>PE - Cluster Transition Analyses</title>
+        <style>
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid black; padding: 10px; text-align: center; }
+            th { background-color: #f2f2f2; }
+            a { text-decoration: none; color: blue; }
+        </style>
+    </head>
+    <body>
+        <h1>PE - Cluster Transition Analyses</h1>
+    """
+
+    for cluster_size in cluster_size_list:
+        html_content += f"    <h2>Cluster Size {cluster_size}</h2>\n"
+        html_content += "    <table>\n"
+        html_content += "        <thead>\n"
+        html_content += "            <tr>\n"
+        html_content += "                <th>Treatment</th>\n"
+
+        for start, end in phases:
+            html_content += f"                <th>Days {start}-{end}</th>\n"
+
+        html_content += "            </tr>\n"
+        html_content += "        </thead>\n"
+        html_content += "        <tbody>\n"
+
+        for treatment in treatment_list:
+            html_content += "            <tr>\n"
+            html_content += f"                <td>{treatment.capitalize()}</td>\n"
+
+            for start, end in phases:
+                file_name = f"pe_cluster_{cluster_size}_{treatment}_days_{start}_to{end}_transition_matrix_interactive.html_interactive.html"
+                link = f"interactive_html/{file_name}"
+                html_content += f'                <td><a href="{link}">View</a></td>\n'
+
+            html_content += "            </tr>\n"
+
+        html_content += "        </tbody>\n"
+        html_content += "    </table>\n"
+
+    html_content += "</body>\n</html>"
+
+    output_html_path = os.path.join(path, "overview.html")
+    with open(output_html_path, "w") as file:
+        file.write(html_content)
