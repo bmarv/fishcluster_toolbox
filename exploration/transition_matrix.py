@@ -4,6 +4,7 @@ from tqdm import tqdm
 import os
 import re
 from matplotlib.backends.backend_pdf import PdfPages
+from multiprocessing import Pool, cpu_count
 
 import exploration.query_helper as query_helper
 import exploration.visualization as visualization
@@ -53,6 +54,24 @@ def queries_for_transition_matrices_f_all(output_dir):
                 )
 
 
+def parallelized_transition_matrix(args):
+    file_name, pattern, input_directory, output_dir_transition_matrices = args
+    match = re.match(pattern, file_name)
+    if match:
+        treatment = match.group(1)
+        day_start = match.group(2)
+        day_end = match.group(3)
+        for cluster_size in [5, 10, 20]:
+            output_file = (
+                output_dir_transition_matrices
+                + f"/pe_cluster_{cluster_size}_{treatment}_days_{day_start}_to{day_end}_transition_matrix.csv"
+            )
+            # create transition matrix
+            create_transitions(
+                os.path.join(input_directory, file_name), cluster_size, output_file
+            )
+
+
 def process_files_for_transition_matrix(
     input_directory, output_dir_transition_matrices
 ):
@@ -61,26 +80,23 @@ def process_files_for_transition_matrix(
     """
 
     # Regex pattern to extract details from file names
-    pattern = r"pe_cluster_(\d+)_(control|predator)_days_(\d+)_to(\d+)_queries\.csv"
+    pattern = r"pe_clusters_all_(control|predator)_days_(\d+)_to(\d+)_queries\.csv"
     os.makedirs(output_dir_transition_matrices, exist_ok=True)
-    for file_name in tqdm(
-        os.listdir(input_directory), desc="Processing files for transition matrices"
-    ):
-        match = re.match(pattern, file_name)
-        if match:
-            cluster_size = int(match.group(1))
-            treatment = match.group(2)
-            day_start = match.group(3)
-            day_end = match.group(4)
-            output_file = (
-                output_dir_transition_matrices
-                + f"/pe_cluster_{cluster_size}_{treatment}_days_{day_start}_to{day_end}_transition_matrix.csv"
+    arguments = [
+        (file_name, pattern, input_directory, output_dir_transition_matrices)
+        for file_name in os.listdir(input_directory)
+    ]
+    num_cores = cpu_count() - 1
+    with Pool(num_cores) as pool:
+        list(
+            tqdm(
+                pool.imap(
+                    parallelized_transition_matrix, arguments
+                ),
+                desc="Parallelized transition matrices",
+                total=len(os.listdir(input_directory))
             )
-
-            # create transition matrix
-            create_transitions(
-                os.path.join(input_directory, file_name), cluster_size, output_file
-            )
+        )
 
     pattern_viz = (
         r"pe_cluster_(\d+)_(control|predator)_days_(\d+)_to(\d+)_transition_matrix\.csv"
