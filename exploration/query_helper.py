@@ -2,7 +2,15 @@ import os
 import config
 import pandas as pd
 import pymysql
+import logging
+
 import downstream_analyses.cluster_occupancy_dbm as dbm
+
+logging.basicConfig(
+    level=logging.DEBUG,  # minimum log level
+    format='%(asctime)s - %(levelname)s - %(message)s',  # timestamp
+    datefmt='%Y-%m-%d %H:%M:%S',  # datetime format
+)
 
 
 cluster_occupancy_db = dbm.ClusterOccupancyDBInterface(
@@ -58,17 +66,21 @@ def query_transitions(
         ORDER BY
             row_id;
     """
-    print("starting queries")
+    logging.info(f'''Running queries for:
+        treatment: {treatment}
+        start: {experimental_day_start}
+        end: {experimental_day_end}
+    ''')
     with conn.cursor() as cursor:
         cursor.execute(query)
         data = cursor.fetchall()
     conn.close()
-    print("queries finished")
+    logging.info("\tqueries finished")
     columns = ['row_id', 'cluster_region_5', 'cluster_region_10', 'cluster_region_20']
     df = pd.DataFrame(data, columns=columns)
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(
         f"{output_dir}/pe_clusters_all_{treatment}_days_{experimental_day_start}_to{experimental_day_end}_queries.csv"
     )
-    print("written out to csv")
+    logging.info("\tqueries written out to csv")
     return df

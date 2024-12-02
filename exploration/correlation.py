@@ -1,7 +1,16 @@
 import os
 import time
+import logging
+
 import exploration.query_helper as query_helper
 import exploration.visualization as visualization
+
+
+logging.basicConfig(
+    level=logging.DEBUG,  # minimum log level
+    format='%(asctime)s - %(levelname)s - %(message)s',  # timestamp
+    datefmt='%Y-%m-%d %H:%M:%S',  # datetime format
+)
 
 
 def create_directory_structure(cl, date="", sample=10000):
@@ -19,7 +28,7 @@ def correlogram_with_hue(cl, date, sample):
     parent_dir = create_directory_structure(cl=cl, date=date, sample=sample)
     for reg in range(1, cl + 1):
         start_time = time.time()
-        print(f"running for reg {reg}")
+        logging.info(f"Correlogram running for Region {reg}")
         data_df = query_helper.query_for_cluster_and_region_f_correlation(
             cl=cl, reg=reg, sample=sample, parent_dir=parent_dir
         )
@@ -68,4 +77,4 @@ def correlogram_with_hue(cl, date, sample):
         )
         del data_df, temp_df, df_z
         total_time = time.time() - start_time
-        print(f"\t => total time needed: {total_time}")
+        logging.info(f"\t => total time needed: {total_time}")
