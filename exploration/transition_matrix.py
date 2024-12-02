@@ -39,19 +39,16 @@ def return_stochastic_matrix_from_transition_matrix(transition_matrix, epsilon=1
 
 
 def queries_for_transition_matrices_f_all(output_dir):
-    cluster_size_list = [5, 10, 20]
     treatment_list = ["control", "predator"]
     experimental_day_tuples = [(1, 7), (8, 14), (15, 21), (22, 28), (29, 35), (36, 42)]
-    for cluster_size in cluster_size_list:
-        for experimental_day_start, experimental_day_end in experimental_day_tuples:
-            for treatment in treatment_list:
-                query_helper.query_transitions(
-                    output_dir,
-                    cluster_size,
-                    treatment,
-                    experimental_day_start,
-                    experimental_day_end,
-                )
+    for experimental_day_start, experimental_day_end in experimental_day_tuples:
+        for treatment in treatment_list:
+            query_helper.query_transitions(
+                output_dir,
+                treatment,
+                experimental_day_start,
+                experimental_day_end,
+            )
 
 
 def parallelized_transition_matrix(args):

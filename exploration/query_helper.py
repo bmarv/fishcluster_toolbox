@@ -38,7 +38,7 @@ def query_for_cluster_and_region_f_correlation(cl, reg, sample, parent_dir):
 
 
 def query_transitions(
-    output_dir, cluster_size, treatment, experimental_day_start, experimental_day_end
+    output_dir, treatment, experimental_day_start, experimental_day_end
 ):
     conn = pymysql.connect(
         host="localhost", user="root", password=config.PASSWORD, db=config.DATABASE_NAME
@@ -46,16 +46,17 @@ def query_transitions(
     DB_TABLE_NAME = "cluster_occupancies"
     query = f"""
         SELECT
-            df_time_index,
             row_id,
-            cluster_region_{cluster_size}
+            cluster_region_5,
+            cluster_region_10,
+            cluster_region_20
         FROM
             {DB_TABLE_NAME}
         WHERE
             treatment = "{treatment}" AND
             experimental_day BETWEEN {experimental_day_start} AND {experimental_day_end}
         ORDER BY
-            df_time_index;
+            row_id;
     """
     print("starting queries")
     with conn.cursor() as cursor:
@@ -63,11 +64,11 @@ def query_transitions(
         data = cursor.fetchall()
     conn.close()
     print("queries finished")
-    columns = ["df_time_index", "row_id", f"cluster_region_{cluster_size}"]
+    columns = ['row_id', 'cluster_region_5', 'cluster_region_10', 'cluster_region_20']
     df = pd.DataFrame(data, columns=columns)
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(
-        f"{output_dir}/pe_cluster_{cluster_size}_{treatment}_days_{experimental_day_start}_to{experimental_day_end}_queries.csv"
+        f"{output_dir}/pe_clusters_all_{treatment}_days_{experimental_day_start}_to{experimental_day_end}_queries.csv"
     )
     print("written out to csv")
     return df
