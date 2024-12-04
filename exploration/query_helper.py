@@ -8,8 +8,8 @@ import downstream_analyses.cluster_occupancy_dbm as dbm
 
 logging.basicConfig(
     level=logging.DEBUG,  # minimum log level
-    format='%(asctime)s - %(levelname)s - %(message)s',  # timestamp
-    datefmt='%Y-%m-%d %H:%M:%S',  # datetime format
+    format="%(asctime)s - %(levelname)s - %(message)s",  # timestamp
+    datefmt="%Y-%m-%d %H:%M:%S",  # datetime format
 )
 
 
@@ -46,37 +46,60 @@ def query_for_cluster_and_region_f_correlation(cl, reg, sample, parent_dir):
 
 
 def query_transitions(
-    output_dir, treatment, experimental_day_start, experimental_day_end
+    output_dir,
+    treatment,
+    experimental_day_start,
+    experimental_day_end,
+    subsampling_factor=None,
 ):
     conn = pymysql.connect(
         host="localhost", user="root", password=config.PASSWORD, db=config.DATABASE_NAME
     )
     DB_TABLE_NAME = "cluster_occupancies"
-    query = f"""
-        SELECT
-            row_id,
-            cluster_region_5,
-            cluster_region_10,
-            cluster_region_20
-        FROM
-            {DB_TABLE_NAME}
-        WHERE
-            treatment = "{treatment}" AND
-            experimental_day BETWEEN {experimental_day_start} AND {experimental_day_end}
-        ORDER BY
-            row_id;
-    """
-    logging.info(f'''Running queries for:
+    if subsampling_factor:
+        query = f"""
+            SELECT
+                row_id,
+                cluster_region_5,
+                cluster_region_10,
+                cluster_region_20
+            FROM
+                {DB_TABLE_NAME}
+            WHERE
+                treatment = "{treatment}" AND
+                experimental_day BETWEEN {experimental_day_start} AND {experimental_day_end}
+                AND row_id % {subsampling_factor} = 0
+            ORDER BY
+                row_id;
+            """
+    else:
+        query = f"""
+            SELECT
+                row_id,
+                cluster_region_5,
+                cluster_region_10,
+                cluster_region_20
+            FROM
+                {DB_TABLE_NAME}
+            WHERE
+                treatment = "{treatment}" AND
+                experimental_day BETWEEN {experimental_day_start} AND {experimental_day_end}
+            ORDER BY
+                row_id;
+        """
+    logging.info(
+        f"""Running queries for:
         treatment: {treatment}
         start: {experimental_day_start}
         end: {experimental_day_end}
-    ''')
+    """
+    )
     with conn.cursor() as cursor:
         cursor.execute(query)
         data = cursor.fetchall()
     conn.close()
     logging.info("\tqueries finished")
-    columns = ['row_id', 'cluster_region_5', 'cluster_region_10', 'cluster_region_20']
+    columns = ["row_id", "cluster_region_5", "cluster_region_10", "cluster_region_20"]
     df = pd.DataFrame(data, columns=columns)
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(

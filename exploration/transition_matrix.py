@@ -38,7 +38,7 @@ def return_stochastic_matrix_from_transition_matrix(transition_matrix, epsilon=1
     return smoothed * 100 / smoothed.sum(axis=1, keepdims=True)
 
 
-def queries_for_transition_matrices_f_all(output_dir):
+def queries_for_transition_matrices_f_all(output_dir, subsampling_factor=None):
     treatment_list = ["control", "predator"]
     experimental_day_tuples = [(1, 7), (8, 14), (15, 21), (22, 28), (29, 35), (36, 42)]
     for experimental_day_start, experimental_day_end in experimental_day_tuples:
@@ -48,6 +48,7 @@ def queries_for_transition_matrices_f_all(output_dir):
                 treatment,
                 experimental_day_start,
                 experimental_day_end,
+                subsampling_factor,
             )
 
 
@@ -87,11 +88,9 @@ def process_files_for_transition_matrix(
     with Pool(num_cores) as pool:
         list(
             tqdm(
-                pool.imap(
-                    parallelized_transition_matrix, arguments
-                ),
+                pool.imap(parallelized_transition_matrix, arguments),
                 desc="Parallelized transition matrices",
-                total=len(os.listdir(input_directory))
+                total=len(os.listdir(input_directory)),
             )
         )
 
