@@ -167,6 +167,16 @@ by calling the following python module:
 python -m downstream_analyses.cluster_occupancy_dbm
 ```
 
+#### Exploration: Correlation Analyses, Transition Matrices
+The trained data can be investigated with the module `exploration` after building the database.
+Correlation Analyses investigate the correlation of the features `Step-Length, Turning-Angle, Distance-to-the-Wall` for the respective cluster. For this, run the following module (subsampling sets the maximum number of datapoints for calculating the correlation):
+```bash
+python -m exploration --program correlation --input_dir /path/to/your/output/dir --cluster_size <int> --subsampling <int>
+```
+Calculations regarding the transitions and their probabilities, as well as calculations regarding the divergences of treatment groups along phases and overall cluster visits can be done with the following command. This also creates visualizations in a static and interactive fashion (subsampling samples every n-th number, not setting it uses all available data for calculating the transitions).
+```bash
+python -m exploration --program transition --input_dir /path/to/your/output/dir [--subsampling <int>]
+```
 
 ---
 ## References:

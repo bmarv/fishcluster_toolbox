@@ -1,4 +1,5 @@
 import os
+import contextlib
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -8,6 +9,12 @@ import seaborn as sns
 from scipy.stats import pearsonr
 from pyvis.network import Network
 import matplotlib.colors as mcolors
+
+
+def pyvis_network_silent_show(self, *args, **kwargs):
+    with open(os.devnull, "w") as fnull:
+        with contextlib.redirect_stdout(fnull):
+            self.original_show(*args, **kwargs)
 
 
 def plot_cluster_counts_f_cluster_size_treatment(
@@ -442,17 +449,18 @@ def matrix_to_transition_html(
     # Number of clusters
     num_clusters = transition_matrix.shape[0]
 
-    # # Normalize the matrix for percentages if required
-    # if use_percentage:
-    #     row_sums = np.sum(transition_matrix, axis=1, keepdims=True)
-    #     with np.errstate(
-    #         divide="ignore", invalid="ignore"
-    #     ):  # Ignore divide-by-zero warnings
-    #         transition_matrix = np.nan_to_num(
-    #             (transition_matrix.T / row_sums.T).T * 100
-    #         )
+    net = Network(
+        height="800px",
+        width="100%",
+        notebook=True,
+        directed=True,
+        cdn_resources="in_line",
+    )
+    # Save the original show method only once
+    if not hasattr(Network, "original_show"):
+        Network.original_show = Network.show
 
-    net = Network(height="800px", width="100%", notebook=True, directed=True)
+    Network.show = pyvis_network_silent_show
 
     # Adjust physics dynamically for larger networks
     if num_clusters <= 10:

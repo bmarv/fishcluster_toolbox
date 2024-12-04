@@ -7,7 +7,7 @@ import logging
 import downstream_analyses.cluster_occupancy_dbm as dbm
 
 logging.basicConfig(
-    level=logging.DEBUG,  # minimum log level
+    level=logging.INFO,  # minimum log level
     format="%(asctime)s - %(levelname)s - %(message)s",  # timestamp
     datefmt="%Y-%m-%d %H:%M:%S",  # datetime format
 )
@@ -39,9 +39,9 @@ def query_for_cluster_and_region_f_correlation(cl, reg, sample, parent_dir):
         },
         sample=sample,
     )
-    data_df.to_csv(f"{parent_dir}/raw_df/cl{cl}_reg{reg}_df.csv")
+    data_df.to_csv(os.path.join(parent_dir, "raw_df", f"cl{cl}_reg{reg}_df.csv"))
     data_df_corr = data_df[["step_size", "turning_angle", "dist_wall"]].dropna().corr()
-    data_df_corr.to_csv(f"{parent_dir}/corr/cl{cl}_reg{reg}_corr.csv")
+    data_df_corr.to_csv(os.path.join(parent_dir, "corr", f"cl{cl}_reg{reg}_corr.csv"))
     return data_df
 
 
@@ -103,7 +103,10 @@ def query_transitions(
     df = pd.DataFrame(data, columns=columns)
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(
-        f"{output_dir}/pe_clusters_all_{treatment}_days_{experimental_day_start}_to{experimental_day_end}_queries.csv"
+        os.path.join(
+            output_dir,
+            f"pe_clusters_all_{treatment}_days_{experimental_day_start}_to{experimental_day_end}_queries.csv",
+        )
     )
     logging.info("\tqueries written out to csv")
     return df
