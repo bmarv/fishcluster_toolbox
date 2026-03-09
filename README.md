@@ -11,8 +11,8 @@
 This repository provides a comprehensive set of tools for conducting behavioural analyses on timeseries of 2-D, x-y coordinate (i.e., movement) data. It includes unsupervised machine learning algorithms for embedding and inferencing using UMAP and K-Means. Unsupervised clustering is used to classify behaviors and calculate the degree of 'Shannon entropy' in behavioral space as a measure of behavioral diversity.
 
 
-$\Rightarrow$ paper: [Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf M. Developmental arcs of plasticity in whole movement repertoires of a clonal fish. bioRxiv. 2023:2023-12.](https://www.biorxiv.org/content/10.1101/2023.12.07.570540v1) \
-$\Rightarrow$ link to dataset:
+$\Rightarrow$ paper: [Ehlman, Sean M., Ulrike Scherer, David Bierbach, Luka Stärk, Marvin Beese, and Max Wolf. "Developmental arcs of plasticity in whole movement repertoires of a clonal fish." Iscience 28, no. 9 (2025), Cell Press.](https://doi.org/10.1016/j.isci.2025.113189) \
+$\Rightarrow$ link to dataset: [[5]](#5-httpsdatadryadorgdatasetdoi105061dryadx69p8cztw)
 
 ## Getting started using Docker
 For easier software support across platforms and architectures, working with docker images and containers might be of help. 
@@ -76,7 +76,7 @@ python -m processing.data_processing
 ```
 
 This will give us a preprocessed dataset in the `./Projections/` directory of the overall dataset, where the data is stored as .mat files. \
-The preprocessed dataset is published under [the following link] [[5]](#5-todo-insert-dataset-link)
+The preprocessed dataset is published under [[5]](#5-httpsdatadryadorgdatasetdoi105061dryadx69p8cztw)
 
 ### Training
 For obtaining behavioural clusters, we rely on using unsupervised machine learning paradigms on the underlying dataset. Given the data, we perform embedding on the whole dataset using Uniform Manifold Approximation (UMAP) [[6]](#6-mcinnes-leland-john-healy-and-james-melville-umap-uniform-manifold-approximation-and-projection-for-dimension-reduction-arxiv-preprint-arxiv180203426-2018) and K-Means [[7]](#7-kanungo-tapas-et-al-an-efficient-k-means-clustering-algorithm-analysis-and-implementation-ieee-transactions-on-pattern-analysis-and-machine-intelligence-247-2002-881-892) as well as inferencing on all the individuals. Afterwards, using Watershed-Segmentation [[9]](#9-f-meyer-topographic-distance-and-watershed-lines-signal-processing-38-113125-1994) we can obtain behavioural clusters for further downstream analyses.
@@ -94,14 +94,14 @@ After training, the embedding-models are stored in the `./Models/` directory of 
 The raw dataset after processing from Biotracker consists of multiple blocks with their respective front or back compartments. Every compartment includes footage from multiple cameras annotated by their camera-id for multiple days. Each day then has 15 batches of footage, where the timepoint and the corresponding x- and y-positions are stored. 
 
 #### Published Dataset
-Our published dataset is accessible under [the following link](#5-todo-insert-dataset-link) and includes already cleaned and preprocessed data. For every individual, indicated by _block-cameraid-compartment_, one file exists for every experimental-day in a .mat format. 
+Our published dataset [[5]](#5-httpsdatadryadorgdatasetdoi105061dryadx69p8cztw) includes already cleaned and preprocessed data. For every individual, indicated by _block-cameraid-compartment_, one file exists for every experimental-day in a .mat format. 
 The included features for this timeseries are:
 * X-Y Coordinates: The spatial positions of each fish are recorded over time, providing insights into their movement patterns within the experimental environment.
 * Step-Length: Information on the distance covered by each fish per time step, offering a quantifiable measure of its activity.
 * Turning-Angle: The angles at which the fish change direction from an initial heading (i.e. previous timestep), allowing for the analysis of navigation and path tortuosity.
 * Distance-to-the-Wall: The proximity of each fish to the enclosure walls, providing context on habitat preferences and spatial utilization. 
 
-Further information can be found at [insert link](!todo).
+Further information can be found at [[5]](#5-httpsdatadryadorgdatasetdoi105061dryadx69p8cztw).
 
 ### Preprocessing
 To ensure data quality and account for differential feature scaling, all data were normalized. We exclude days with missing trajectories from our analysis. Additionally, we only consider datapoints that are within the defined tank area. Datapoints that are identified as erroneous points are excluded, as was a given day's data for which less than 1000 datapoints per day were observed (most days have ~140k datapoints per individual), ensuring sufficient data for analysis.
