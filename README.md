@@ -133,7 +133,7 @@ python -m downstream_analyses
 
 ---
 ## References:
-###### [1] Ehlman SM, Scherer U, Bierbach D, Stärk L, Beese M, Wolf M. Developmental arcs of plasticity in whole movement repertoires of a clonal fish. bioRxiv. 2023:2023-12.
+###### [1] Ehlman, Sean M., Ulrike Scherer, David Bierbach, Luka Stärk, Marvin Beese, and Max Wolf. "Developmental arcs of plasticity in whole movement repertoires of a clonal fish." Iscience 28, no. 9 (2025), Cell Press.
 
 ###### [2] U. Scherer, S. M. Ehlman, D. Bierbach, J. Krause, M. Wolf, Reproductive individuality of clonal fish raised in near-identical environments and its link to early-life behavioral individuality. Nature Communications 14, 7652 (2023).
 
@@ -141,7 +141,7 @@ python -m downstream_analyses
 
 ###### [4] Mönck, Hauke Jürgen, et al. "BioTracker: an open-source computer vision framework for visual animal tracking." arXiv preprint arXiv:1803.07985 (2018).
 
-###### [5] !TODO! insert dataset link
+###### [5] https://datadryad.org/dataset/doi:10.5061/dryad.x69p8cztw
 
 ###### [6] McInnes, Leland, John Healy, and James Melville. "Umap: Uniform manifold approximation and projection for dimension reduction." arXiv preprint arXiv:1802.03426 (2018).
 
